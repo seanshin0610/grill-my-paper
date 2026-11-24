@@ -44,6 +44,7 @@ Open a session in the folder that holds your paper, then:
 | `/grill-my-paper <paper.pdf or .tex>` | Review at the default depth |
 | `... depth=quick` / `standard` / `full` / `desk` | Choose how many reviewers and whether they debate |
 | `... target=RFS` | Set the target journal |
+| `... model=opus` | Run the reviewers on a model other than the session's |
 | `... also=online_appendix.pdf` | Give reviewers another file; for a TeX paper the appendix, figures, and bibliography are found automatically |
 | `... reviewers: skeptic, champion, lit: <a literature>` | Choose the reviewers yourself |
 | `... add: <describe a reviewer>` | Add any reviewer type you can describe |
@@ -89,8 +90,8 @@ otherwise a pull that touches the same persona will stop with a conflict.
 
 - This is a stress test by simulated reviewers. It shows where a draft is vulnerable; it does not
   forecast what real referees will decide.
-- Reviewers tag every outside citation as verified or unverified. Check the unverified ones yourself
-  before acting on them.
+- Reviewers tag every outside citation as verified or from memory, and a separate agent looks up the
+  ones from memory without seeing your paper. Still read a cited paper yourself before you rely on it.
 
 ## License
 

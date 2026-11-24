@@ -30,10 +30,13 @@ Two consequences of being on a panel:
     Extraction scrambles tables and drops figures, so when a point depends on a number, a table's
     layout, or a figure, open that page of the PDF. Never report something as an error in the paper
     that might be an extraction artifact without checking the PDF.
-  - **From LaTeX:** there are no pages. `===== File: name =====` markers show where each source file
-    starts. Cite a section, a figure or table label, or a line number of `paper.txt`. Tables are
-    inlined as LaTeX and are reliable. Figures are separate files in `figures/`; open the file when a
-    point depends on what a figure shows.
+  - **From LaTeX:** there are no pages. Cite a section, a figure or table label, or a line number of
+    `paper.txt`. Those line numbers are the author's own: line N of `paper.txt` is line N of their
+    .tex file, so they can go straight to it. Files the paper pulls in with `\input` (often tables)
+    are not spliced in. Each sits after the end of the main file under a `===== File: name =====`
+    marker, and the line that calls it says where; when you cite a line in one of them, give the
+    file's name as well. Tables are LaTeX source and are reliable. Figures are separate files in
+    `figures/`; open the file when a point depends on what a figure shows.
 - Before claiming the paper fails to do something, search the text for it, including the appendix.
   "The authors do not address X" is the most common false statement in referee reports.
 

@@ -10,6 +10,7 @@ disputed points, and an editor writes a verdict and a revision plan for your tar
 | `/grill-my-paper <paper.pdf or .tex>` | Review at the default depth. Asks the target journal and confirms the panel before starting. |
 | `/grill-my-paper <paper> depth=quick` | Pick a depth: `quick`, `standard`, `full`, or `desk` (table below). |
 | `/grill-my-paper <paper> target=RFS` | Set the target journal. |
+| `/grill-my-paper <paper> model=opus` | Run the reviewers on a model other than the session's. The editor's part (casting, rulings, the report) stays on the session's model. |
 | `/grill-my-paper <paper> also=online_appendix.pdf` | Give reviewers another file, such as an appendix. For a TeX paper the appendix, figures, and bibliography it points to are found automatically. |
 | `/grill-my-paper <paper> reviewers: skeptic, champion, lit: corporate bond liquidity, auditor` | Choose the seats yourself. |
 | `/grill-my-paper <paper> add: a behavioral finance referee who thinks it is all sentiment` | Add any reviewer you can describe. A new persona is written for it, and you can save it afterwards. |
@@ -41,6 +42,7 @@ A folder next to the paper, `grill_<paper-name>_<date>/`:
   disputed issue, and a revision plan ordered by payoff (including what to ignore).
 - `round1/`, `round2/`: each reviewer's own report and debate answers.
 - `ledger.md`: every issue raised and who raised it.
+- `citation_check.md`: whether the papers reviewers cited from memory exist and say what was claimed.
 
 ## Good to know
 
@@ -48,9 +50,11 @@ A folder next to the paper, `grill_<paper-name>_<date>/`:
 - If the paper is in a git repository, such as an Overleaf project shared with coauthors, the run
   folder is added to that repository's local exclude list (`.git/info/exclude`). It cannot be
   committed or pushed by accident, and coauthors see no change.
-- PDF papers are cited by page; TeX papers have no pages, so reviewers cite sections, labels, and
-  line numbers of `paper.txt`.
-- Citations to other papers are tagged verified or unverified. Check the unverified ones by hand.
+- PDF papers are cited by page. TeX papers have no pages, so the report cites sections, labels, and
+  line numbers, and those are the line numbers of your own .tex file.
+- Reviewers tag each citation to another paper as verified or from memory. A separate Sonnet agent
+  then looks up the ones from memory and reports which exist and say what the reviewer claimed. It
+  never sees your paper. Whatever it could not confirm is listed as such in the report.
 - The panel is a stress test, not a forecast of what real referees will say.
 - The skill keeps no record of your runs and never edits itself during a review. Reviewers and
   defaults change only when you ask: `tune ...`, `save ...`, or "default to RFS".

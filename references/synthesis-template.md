@@ -5,13 +5,18 @@ to the author. The author should be able to read sections 1 to 3 in five minutes
 paper stands, and use section 6 as a work plan.
 
 Write in plain declarative prose. Refer to reviewers by role. Every issue carries its location in the
-paper. Do not repeat the same point across sections; later sections refer to issue ids.
+paper, in a form the author can go to: a page of the PDF, or a line of their own .tex file. Reviewers
+cite lines of `paper.txt`. Up to the end of the main file those are the .tex file's own line numbers.
+For a line inside a file the paper pulls in with `\input`, convert with the line map and write the
+file's name and its own line number. Do not repeat the same point across sections; later sections
+refer to issue ids.
 
 ```markdown
 # Panel report: <paper title>
 
 **Draft:** <file> · **Target:** <journal> · **Date:** <date> · **Depth:** <quick | standard | full>
-**Panel:** <reviewer ids>
+**Panel:** <reviewer ids> · **Models:** reviewers on <model>, editor on <model>
+**Locations:** <"pages of <file>.pdf", or "l.N is line N of <file>.tex; other files are named">
 
 *This is a stress test by simulated reviewers. It shows where the draft is vulnerable; it does not
 forecast an editorial decision.*
@@ -65,11 +70,13 @@ recommend moving or signposting it.>
 
 ## 5. Literature and positioning
 
-- **Closest papers and what remains new:** <from the literature specialists; each citation tagged
-  [verified] or [unverified]>
+- **Closest papers and what remains new:** <each citation tagged with how it was confirmed:
+  [verified] by the reviewer who cited it, or [checked] by the citation check. Give the corrected
+  record where a reviewer had a detail wrong.>
 - **Missing or mishandled citations:** <...>
-- **Unverified claims to check by hand:** <any claim about prior work that the panel could not verify.
-  State these as leads, never as facts.>
+- **Could not be confirmed:** <works the citation check did not find, and works it found that do not
+  say what the reviewer claimed. State these as leads, never as facts, and say which reviewer point
+  each one was holding up.>
 
 ## 6. Revision plan
 
@@ -103,7 +110,8 @@ matter of taste. This section is required.>
 
 ## 8. Files
 
-- Individual reports: `round1/`  · Cross-examination: `round2/` · Issue ledger: `ledger.md`
+- Individual reports: `round1/`  · Cross-examination: `round2/` · Issue ledger: `ledger.md` ·
+  Citation check: `citation_check.md`
 ```
 
 ## Adjustments by depth

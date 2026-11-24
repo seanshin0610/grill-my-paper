@@ -8,7 +8,7 @@ description: >
   revision plan for the target journal. Tunes or saves reviewer personas only when the user asks.
   Trigger on "grill-my-paper", "grill my paper", "review panel", "have agents debate my paper",
   "stress-test my paper before submission", or "tune the skeptic / a reviewer".
-argument-hint: "<paper.pdf|.tex> [target=RFS] [depth=quick|standard|full] [also=appendix.pdf] [reviewers: ...]  |  tune <feedback>  |  personas  |  help"
+argument-hint: "<paper.pdf|.tex> [target=RFS] [depth=quick|standard|full] [model=opus] [also=appendix.pdf] [reviewers: ...]  |  tune <feedback>  |  personas  |  help"
 disable-model-invocation: true
 ---
 
@@ -37,7 +37,7 @@ Route on the user's arguments (free text; no strict syntax):
 
 | The user gives | Do |
 |---|---|
-| A paper path (optionally target, depth, reviewer list) | **Review**: the workflow below |
+| A paper path (optionally target, depth, reviewer model, reviewer list) | **Review**: the workflow below |
 | A paper path plus an earlier run folder, or "re-run" | **Re-run after revision**: see the section near the end |
 | `tune ...`, or an explicit request to change how a reviewer or the skill works | Read `references/tuning.md` and follow it |
 | `personas`, `save <name>`, "add a reviewer type" | Read `references/tuning.md`, section "Managing the library" |
@@ -80,6 +80,7 @@ All paths are relative to this skill's base directory (shown when the skill load
 | `personas/_TEMPLATE.md` | How to write a new reviewer type |
 | `references/reviewer-brief.md` | Ground rules and report format shared by every reviewer |
 | `references/cross-exam.md` | Round 2 protocol |
+| `references/citation-check.md` | Instructions for the agent that looks up citations reviewers could not verify |
 | `references/synthesis-template.md` | Structure of the final panel report |
 | `references/tuning.md` | Changing a persona when the user asks; saving and listing personas |
 | `references/help.md` | The help page shown for `help` or no arguments. Keep it in step when commands or depths change. |
@@ -100,6 +101,11 @@ pymupdf`). It prints a JSON summary. Read it, because the assignments in Step 3 
 - **`anchor`** says how reviewers cite locations. A PDF gives `pages`: `paper.txt` has
   `===== Page N =====` markers that match the PDF. A TeX source gives `lines`: there are no pages, so
   reviewers cite sections, labels, and line numbers of `paper.txt`.
+- **`line_map`** (TeX only) says what those line numbers mean to the author. Line N of `paper.txt` is
+  line N of the .tex file they edit: comments are blanked instead of removed, and files pulled in with
+  `\input` are placed after the main file, each as a block under a marker, instead of being spliced
+  in. The map has one entry per block; a line number minus the block's `subtract` is the line number
+  inside that file. The same map is printed at the foot of `paper.txt`. Each companion has its own.
 - **`companions`**, **`figures`**, **`bibliography`**: for a TeX source the script follows
   `\externaldocument` (the online appendix, flattened to its own text file, with the label prefix the
   paper uses for it), `\includegraphics` (figure files copied to `figures/`, each with its labels), and
@@ -167,7 +173,8 @@ tunes and adds personas, so look rather than rely on the table below.
 **Confirm once before launching**, unless the user already specified the roster or depth. A run is
 expensive (every reviewer reads the full paper, and again in Round 2), and casting is the biggest
 lever on quality. Show the roster as a table (reviewer, lens, why this paper needs them), state the
-target journal you will use, and give the scale ("6 reviewers, 2 rounds"). Offer the adjacent
+target journal you will use, and give the scale ("6 reviewers, 2 rounds") and the reviewers' model if
+the user set one. Offer the adjacent
 alternatives (quicker, fuller, custom). If the target journal is unknown and the profile lists
 several, ask which one, since the bar and the audience differ.
 
@@ -194,8 +201,10 @@ only the assignment, to `prompts/<reviewer-id>.md` in the run folder:
 ## How to cite locations
 <From the summary's `anchor`. For `pages`: "Cite page numbers; the page markers in paper.txt match
 the PDF." For `lines`: "The source is LaTeX, so there are no page numbers. Cite a section, a figure
-or table label, or a line number in paper.txt. Tables are inlined in the text; figures are separate
-files, so open the file when a point depends on what a figure shows.">
+or table label, or a line number in paper.txt. Lines 1 to <last line of the main block> are the line
+numbers of <file>.tex itself. Files it pulls in with \input follow under markers: <each block from
+the line map, as file and line range>. Figures are separate files, so open the file when a point
+depends on what a figure shows.">
 
 ## Where to point your lens
 <3 to 6 sentences specific to this paper.>
@@ -207,7 +216,8 @@ files, so open the file when a point depends on what a figure shows.">
 Give each reviewer only the materials their persona may read. For `editor-desk`, state the exact
 pages or line ranges of the title, abstract, introduction, and conclusion, name the one results
 exhibit they may open, and leave the appendix out of the list; a reading restriction that is not
-spelled out in pages or lines does not hold.
+spelled out in pages or lines does not hold. If that exhibit is a table pulled in with `\input`, its
+text is in a block after the main file, so give that block's line range as well.
 
 The tailoring paragraph is the part that needs judgment. Its job is to aim the reviewer, not to hand
 them a conclusion. A reviewer handed a hypothesis tends to return it confirmed, which destroys the
@@ -225,9 +235,21 @@ Give each seat a distinct id when a persona is used twice (`lit-bond-liquidity`,
 
 ### Step 4. Round 1: independent reviews
 
-Launch all reviewers in parallel, in a single message, each as a fresh general-purpose subagent on the
-session's model (review quality is the product, so do not downgrade the model unless the user asks for
-a cheap run). Use this launch prompt:
+Launch all reviewers in parallel, in a single message, each as a fresh general-purpose subagent.
+
+**Which model.** Reviewers run on the session's model unless the user gives `model=<name>` (for
+example `model=opus` or `model=sonnet`). Then pass that name as the model of every reviewer subagent,
+in both rounds. If the user names a model for one seat only ("the skeptic on opus"), apply it to that
+seat. Do not choose a cheaper model on your own, because review quality is the product. If the harness
+does not accept the name the user gave, say so and ask; do not substitute another model silently,
+since they chose it for a reason (cost, speed, or a second opinion from a different model).
+
+Your own work as editor (the casting, the ledger, the synthesis) runs on the session's model whatever
+`model=` says, because it happens in this conversation. A user who wants a different editor has to
+switch the session's model, so tell them that if they ask for it. Record the reviewers' model and the
+editor's model in `00_panel.md` and in the report header, so a reader knows what produced the report.
+
+Use this launch prompt:
 
 ```
 You are reviewer "<reviewer-id>" on a simulated review panel for a paper under consideration at <journal>.
@@ -265,6 +287,36 @@ Write `ledger.md` in the run folder: one row per distinct issue across all repor
 - Record literature claims separately with their verification tags. An unverified "this has been done
   by X" must never reach the author stated as fact.
 
+#### Check the citations reviewers could not verify
+
+If any report cites outside work tagged `[from memory, unverified]`, or with no tag at all, have those
+citations looked up before you go on. Launch one subagent on Sonnet (`model: "sonnet"`), whatever
+model the reviewers ran on: this is lookup work, which a smaller model does well and cheaply. Give it
+each citation with the claim the reviewer attached to it, and nothing else. It does not need the
+paper, and an agent that never sees the unpublished manuscript cannot put any of it into a search.
+
+```
+You are checking citations for the editor of a review panel.
+
+Read and follow: <skill-dir>/references/citation-check.md
+
+Citations to check:
+1. <citation as the reviewer gave it>. Cited for: <the reviewer's claim about that work>
+2. ...
+
+Write your results to <run>/citation_check.md. Reply with only the count of each verdict and the path.
+```
+
+Read the result and replace the tags in the ledger's literature table with the checker's verdicts,
+correcting any record the reviewer had wrong (a year, a coauthor). Then let the verdicts decide what
+the citations are worth. A novelty objection resting on a work the checker could not find is not
+evidence against the paper: keep it off the docket and out of the rulings, and report it as not
+found. A work that exists but does not say what the reviewer claimed supports nothing; if the
+reviewer's point depended on it, say so in the ruling.
+
+Skip this when every citation is already verified. After Round 2, run it again only if a ruling
+depends on a citation first raised there.
+
 At `quick` and `desk` depth, skip to Step 7.
 
 ### Step 6. Round 2: cross-examination
@@ -289,8 +341,11 @@ Write `PANEL_REPORT.md` in the run folder using `references/synthesis-template.m
   Independent agreement in Round 1 is the strongest signal the panel produces. Agreement that appears
   only in Round 2, after reviewers have read each other, is much weaker.
 - **Discount what deserves it**: points with no anchor in the paper, generic requests ("more
-  robustness") with no named threat, novelty objections resting on unverified citations, and
-  anything the paper already addresses.
+  robustness") with no named threat, novelty objections resting on citations the check could not
+  confirm, and anything the paper already addresses.
+- **Cite locations the author can go to.** Pages for a PDF. For a TeX source, `l.N` is line N of the
+  author's own .tex file; for a location inside a file the paper pulls in, convert with the line map
+  and give that file's name and its own line number. Say in the report header which this is.
 - **Protect the author's time.** A revision plan that lists everything is as useless as one that lists
   nothing. Sort actions by leverage: how much each moves the decision relative to what it costs
   (rewrite, new analysis on existing data, new data). Include a "Set aside" section naming the
@@ -317,7 +372,8 @@ Everything about the run lives in the run folder. Nothing is written to the skil
 ├── PANEL_REPORT.md      the deliverable
 ├── 00_panel.md          paper facts, roster, why each reviewer was cast
 ├── ledger.md            issue ledger
-├── paper.txt            extracted text (page markers for a PDF; cite by line for TeX)
+├── citation_check.md    verdicts on citations reviewers could not verify, when there were any
+├── paper.txt            extracted text (page markers for a PDF; the source's own line numbers for TeX)
 ├── <appendix>.txt       online appendix and any other companion, when there is one
 ├── figures/, *.bib      figure files and bibliography gathered from a TeX source
 ├── prompts/<id>.md      each reviewer's assignment
@@ -343,11 +399,13 @@ When the user has revised the paper and wants to know whether it worked, find th
 
 Knowing these helps you make sensible calls in situations the steps do not cover.
 
-- **Correlated reviewers.** All reviewers are the same underlying model. Their diversity comes only
-  from what they are asked and what they read, so keep mandates distinct and Round 1 independent.
+- **Correlated reviewers.** Unless the user sets otherwise, all reviewers are the same underlying
+  model. Their diversity comes only from what they are asked and what they read, so keep mandates
+  distinct and Round 1 independent.
 - **Invented literature.** A confident, wrong "X (2019) already shows this" can send the author
   chasing a paper that does not exist or abandoning a real contribution. Citations carry verification
-  tags from the reviewer through to the final report.
+  tags from the reviewer through to the final report, and a separate agent looks up the ones a
+  reviewer could not verify.
 - **Laundry lists.** Six reviewers can produce sixty comments. The ledger, the docket, and the
   editor's rulings exist to cut that to the handful that matter.
 - **Leading the witness.** Tailoring that tells a reviewer what to find produces confirmation, not

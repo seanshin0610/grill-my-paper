@@ -11,8 +11,11 @@ subfolders the panel uses, writes paper.txt inside it, and prints a JSON summary
 PDF sources: pages are separated by "===== Page N =====" markers that match the
 PDF's page numbers, so reviewers cite pages.
 
-TeX sources: \\input / \\include files are inlined and comments stripped. There
-are no pages, so reviewers cite sections, labels, or line numbers of paper.txt.
+TeX sources: there are no pages, so reviewers cite sections, labels, or line
+numbers. Line N of paper.txt is line N of the .tex: comments are blanked, not
+removed, and files pulled in with \\input / \\include are placed after the main
+file as separate blocks instead of being spliced in. "line_map" in the summary
+(and at the foot of paper.txt) says which lines belong to which file.
 The script also gathers what the source points to:
   - \\externaldocument{...}  -> the online appendix, flattened to <name>.txt
   - \\includegraphics{...}   -> figure files, copied to figures/
@@ -34,7 +37,6 @@ import sys
 from pathlib import Path
 
 PAGE_MARK = "\n\n===== Page {n} =====\n\n"
-FILE_MARK = "\n\n===== File: {name} =====\n\n"
 FIGURE_EXTS = (".pdf", ".png", ".jpg", ".jpeg", ".eps")
 
 INPUT_RE = re.compile(r"\\(?:input|include|subfile)\s*\{([^}]+)\}")
@@ -87,34 +89,89 @@ def extract_pdf(path: Path):
     )
 
 
-def _strip_tex_comments(text: str) -> str:
-    out = []
-    for line in text.splitlines():
-        if line.lstrip().startswith("%"):
-            continue
-        out.append(re.sub(r"(?<!\\)%.*$", "", line))  # cut at the first unescaped %
-    return "\n".join(out)
+def _tex_lines(path: Path):
+    """The file's lines with comments blanked.
+
+    A comment-only line becomes an empty line; it is not dropped. Line N of the
+    result is therefore line N of the file, which is what lets a reviewer's
+    "line 103" be found in the author's editor.
+    """
+    text = path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n").replace("\r", "\n")
+    lines = text.split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
+    return ["" if ln.lstrip().startswith("%") else re.sub(r"(?<!\\)%.*$", "", ln) for ln in lines]
 
 
-def flatten_tex(path: Path, seen=None) -> str:
-    """Inline \\input/\\include files, depth first, with file markers."""
-    seen = seen if seen is not None else set()
-    real = path.resolve()
-    if real in seen:
-        return ""
-    seen.add(real)
-    text = _strip_tex_comments(path.read_text(encoding="utf-8", errors="replace"))
+def flatten_tex(path: Path):
+    """Return (text, line_map) for a TeX source and the files it pulls in.
 
-    def repl(match):
-        name = match.group(1).strip()
-        child = path.parent / name
-        if not child.suffix:
-            child = child.with_suffix(".tex")
-        if not child.exists():
-            return f"\n[extract_paper: could not find {name}]\n"
-        return FILE_MARK.format(name=child.name) + flatten_tex(child, seen)
+    The main file comes first, line for line, so line N of the text is always line N
+    of the .tex the author edits. Files named by \\input, \\include or \\subfile are
+    not spliced in where they are called, because that would shift every later line
+    number. Each one follows the main file as a block of its own under a marker, in
+    the order the paper calls them, and the calling line gets a note saying where
+    its block starts.
 
-    return INPUT_RE.sub(repl, text)
+    line_map has one entry per block: {"file", "first", "last", "subtract"}. A line
+    number of the text minus "subtract" is the line number inside that file.
+    """
+    root_dir = path.parent.resolve()
+    order, lines_of, calls = [], {}, {}
+
+    def find(name: str, including: Path):
+        # LaTeX resolves \input against the main file's folder; \subfile against the calling file's.
+        for base in (root_dir, including.parent):
+            child = base / name
+            if not child.suffix:
+                child = child.with_suffix(".tex")
+            if child.exists():
+                return child.resolve()
+        return None
+
+    def load(p: Path):  # depth first, so a section is followed by the tables it pulls in
+        order.append(p)
+        lines_of[p] = _tex_lines(p)
+        calls[p] = {}
+        for i, line in enumerate(lines_of[p]):
+            for m in INPUT_RE.finditer(line):
+                name = m.group(1).strip()
+                child = find(name, p)
+                calls[p].setdefault(i, []).append(child or name)
+                if child and child not in lines_of:
+                    load(child)
+
+    def label(p: Path) -> str:
+        try:
+            return p.relative_to(root_dir).as_posix()
+        except ValueError:
+            return p.name
+
+    load(path.resolve())
+
+    first, n = {}, 0  # where each block starts: two lines (a blank and a marker) separate blocks
+    for p in order:
+        n += 2 if n else 0
+        first[p] = n + 1
+        n += len(lines_of[p])
+
+    out, line_map = [], []
+    for p in order:
+        if out:
+            out += ["", f"===== File: {label(p)} (pulled in by the paper; the next line is its line 1) ====="]
+        for i, line in enumerate(lines_of[p]):
+            notes = [f"[extract_paper: could not find {c}]" if isinstance(c, str)
+                     else f"[extract_paper: {label(c)} starts at line {first[c]}]"
+                     for c in calls[p].get(i, [])]
+            out.append("  ".join([line, *notes]) if notes else line)
+        line_map.append({"file": label(p), "first": first[p], "last": first[p] + len(lines_of[p]) - 1,
+                         "subtract": first[p] - 1})
+    if len(order) > 1:
+        out += ["", "===== Line map (added by the extractor; not part of the paper) ====="]
+        out += [f"lines {b['first']}-{b['last']}: {b['file']}"
+                + (f" (subtract {b['subtract']} for its own line number)" if b["subtract"] else " (same line numbers)")
+                for b in line_map]
+    return "\n".join(out), line_map
 
 
 def find_heading_page(pages, pattern):
@@ -151,10 +208,10 @@ def read_source(path: Path):
             )
         return body, info
     if suffix == ".tex":
-        body = FILE_MARK.format(name=path.name) + flatten_tex(path)
-        info = {"anchor": "lines"}
+        body, line_map = flatten_tex(path)
+        info = {"anchor": "lines", "line_map": line_map}
         if "[extract_paper: could not find" in body:
-            info["warning"] = f"{path.name}: some \\input files were not found; see the markers in the text."
+            info["warning"] = f"{path.name}: some \\input files were not found; see the notes in the text."
         return body, info
     if suffix in (".txt", ".md"):
         return path.read_text(encoding="utf-8", errors="replace"), {"anchor": "lines"}
@@ -334,9 +391,15 @@ def main():
     if "warning" in info:
         warnings.append(info.pop("warning"))
 
+    def write_text(target: Path, text: str, src_info: dict):
+        # Leading blank lines stay when locations are cited by line; removing them would shift every number.
+        text = text.rstrip() if src_info.get("anchor") == "lines" else text.strip()
+        with target.open("w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text + "\n")
+
     run_dir = make_run_dir(paper, args.run_dir)
     out = run_dir / "paper.txt"
-    out.write_text(body.strip() + "\n", encoding="utf-8")
+    write_text(out, body, info)
 
     text_names = {"paper.txt": paper.resolve()}
     fig_names, companions, figures, bibs = {}, [], [], []
@@ -344,9 +407,11 @@ def main():
 
     def add_text(source: Path, role: str, text: str, src_info: dict, prefix: str = ""):
         name = _unique_name(run_dir, source.stem + ".txt", text_names, source)
-        (run_dir / name).write_text(text.strip() + "\n", encoding="utf-8")
+        write_text(run_dir / name, text, src_info)
         entry = {"role": role, "source": str(source.resolve()), "text": str((run_dir / name).resolve()),
                  "anchor": src_info.get("anchor"), "words": len(text.split())}
+        if "line_map" in src_info:
+            entry["line_map"] = src_info["line_map"]
         if prefix:
             entry["label_prefix"] = prefix
         if "pages" in src_info:
@@ -379,8 +444,10 @@ def main():
             if not ext.exists():
                 missing.append(f"external document not found: {ext.name}")
                 continue
-            ext_body = FILE_MARK.format(name=ext.name) + flatten_tex(ext)
-            add_text(ext, "appendix", ext_body, {"anchor": "lines"}, prefix)
+            ext_body, ext_info = read_source(ext)
+            if "warning" in ext_info:
+                warnings.append(ext_info.pop("warning"))
+            add_text(ext, "appendix", ext_body, ext_info, prefix)
             add_figures(ext_body, ext.parent, ext.name, prefix)
             add_bibs(ext_body, ext.parent)
 
