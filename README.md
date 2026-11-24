@@ -4,8 +4,9 @@ A Claude Code skill that puts your paper draft in front of a panel of reviewer a
 referees see it.
 
 Each reviewer has a different job: a referee who looks for the fastest route to rejection, a champion
-who looks for the best version of the paper, specialists in the literatures you cite, a referee for
-the empirical design, an editor who reads only the first few pages, and others. They review the paper
+who looks for the best version of the paper, a senior scholar who judges how big the contribution is,
+specialists in the literatures you cite, a referee for the empirical design, an editor who reads only
+the first few pages, and others. They review the paper
 independently, then argue over the points they disagree on. An editor rules on the disputes and writes
 a verdict and a revision plan for your target journal, ordered by payoff and including what to ignore.
 
@@ -46,6 +47,7 @@ Open a session in the folder that holds your paper, then:
 | `/grill-my-paper <paper.pdf or .tex>` | Review at the default depth |
 | `... depth=quick` / `standard` / `full` / `desk` | Choose how many reviewers and whether they debate |
 | `... target=RFS` | Set the target journal |
+| `... rounds=3` | Set the number of rounds, 1 to 4: 1 is independent reviews only, each further round is a debate |
 | `... model=opus` | Run the reviewers on a model other than the session's |
 | `... also=online_appendix.pdf` | Give reviewers another file; for a TeX paper the appendix, figures, and bibliography are found automatically |
 | `... reviewers: skeptic, champion, lit: <a literature>` | Choose the reviewers yourself |
@@ -65,8 +67,8 @@ reviews cannot be committed or pushed by accident and your coauthors see no chan
 
 ## Cost
 
-Every reviewer reads the whole paper, and reads it again in the debate round. A `standard` run is five
-reviewers over two rounds. Start with `depth=quick` (three reviewers, no debate) to see what you get.
+Every reviewer reads the whole paper, and reads it again in each debate round. A `standard` run is six
+reviewers over two rounds, and `rounds=` adds or removes debate rounds at any depth. Start with `depth=quick` (three reviewers, no debate) to see what you get.
 
 ## Make it yours
 

@@ -1,7 +1,7 @@
 ---
 id: outsider
 lens: The general-interest reader from another subfield
-use_when: Full panels; any paper aimed at a general-interest journal; whenever the worry is "so what?".
+use_when: In no preset; seat it on request. Papers aimed at a general-interest journal; whenever the worry is "so what?".
 parameters: home_field (optional; default to a subfield of the discipline far from the paper's own)
 reads: full paper
 ---

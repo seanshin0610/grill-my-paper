@@ -14,7 +14,7 @@ refer to issue ids.
 ```markdown
 # Panel report: <paper title>
 
-**Draft:** <file> · **Target:** <journal> · **Date:** <date> · **Depth:** <quick | standard | full>
+**Draft:** <file> · **Target:** <journal> · **Date:** <date> · **Depth:** <quick | standard | full | desk> · **Rounds:** <rounds run, e.g. "2"; when fewer than asked for, "3 of 4 requested; nothing remained in dispute">
 **Panel:** <reviewer ids> · **Models:** reviewers on <model>, editor on <model>
 **Locations:** <"pages of <file>.pdf", or "l.N is line N of <file>.tex; other files are named">
 
@@ -53,7 +53,7 @@ currently pitches itself, say so; that gap is usually the most valuable finding 
 - **Where:** <location>
 - **Issue:** <one or two sentences>
 - **Raised by:** <roles>
-- **In cross-examination:** <what was argued; who moved>
+- **In cross-examination:** <what was argued; who moved, in which round, and the reason they gave>
 - **Ruling:** <the editor's judgment and the reason>
 - **What to do:** <the fix, or "no fix; see section 7 on positioning">
 
@@ -102,23 +102,30 @@ matter of taste. This section is required.>
 ## 7. Positioning and fit
 
 - **Pitch:** <title, abstract, and first-paragraph changes suggested by the panel, especially the
-  editor's first read and the champion's best version>
-- **Journal fit:** <how the paper fits the target; if the panel thinks another journal on the author's
-  list fits better, say so and why>
-- **Likely referees:** <the types of referee an editor would pick, from the editor's first read, and
-  what that implies about which literature's concerns to pre-empt>
+  editor's first read, the champion's best version, and the senior scholar's one sentence>
+- **Journal fit:** <how the paper fits the target, using the senior scholar's judgment of level when
+  one sat; if the panel thinks another journal on the author's list fits better, say so and why>
+- **Likely referees:** <the types of referee an editor would pick, from the editor's first read when
+  one sat (your own judgment otherwise, labelled as yours), and what that implies about which
+  literature's concerns to pre-empt>
 
 ## 8. Files
 
-- Individual reports: `round1/`  · Cross-examination: `round2/` · Issue ledger: `ledger.md` ·
-  Citation check: `citation_check.md` (and `citation_check_round2.md` when there was a second one)
+- Individual reports: `round1/`  · Cross-examination: `round2/` (and `round3/`, `round4/` when run) ·
+  Issue ledger: `ledger.md` · Citation check: `citation_check.md` (and `citation_check_round<N>.md`
+  when a later round needed one)
 ```
 
-## Adjustments by depth
+## Adjustments by number of rounds
 
-- `quick` and `desk`: there is no cross-examination. Drop the "In cross-examination" fields and the
-  "Final" column. Say in section 1 that contested points were ruled on by the editor without the
-  reviewers answering each other, which is weaker.
+- One round (the default at `quick` and `desk`, or `rounds=1`): there is no cross-examination. Drop
+  the "In cross-examination" fields and the "Final" column. Say in section 1 that contested points
+  were ruled on by the editor without the reviewers answering each other, which is weaker.
+- Three or four rounds: the "Final" column is the vote after the last round that ran. In the
+  sentence under the scoreboard, say in which round each vote moved. Where a ruling leans on
+  agreement that first appeared in Round 3 or 4, say so and give the argument behind it, because
+  late agreement on its own is weak evidence. If the rounds stopped early, say so in section 1 as
+  well as in the header.
 - Re-runs: add "## 0. Since the last panel" before section 1 (resolved, remaining, newly introduced,
   how the votes moved).
 

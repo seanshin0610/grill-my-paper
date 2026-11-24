@@ -1,7 +1,7 @@
 ---
 id: editor-desk
 lens: The editor's first read
-use_when: Every panel. Seat once per target journal when the user is choosing between journals.
+use_when: Standard and full panels, and desk runs. Seat once per target journal when the user is choosing between journals.
 parameters: journal (defaults to the run's target journal)
 reads: RESTRICTED to title, abstract, introduction, the first main results table or figure, and the conclusion
 ---

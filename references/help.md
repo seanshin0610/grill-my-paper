@@ -10,6 +10,7 @@ disputed points, and an editor writes a verdict and a revision plan for your tar
 | `/grill-my-paper <paper.pdf or .tex>` | Review at the default depth. Asks the target journal and confirms the panel before starting. |
 | `/grill-my-paper <paper> depth=quick` | Pick a depth: `quick`, `standard`, `full`, or `desk` (table below). |
 | `/grill-my-paper <paper> target=RFS` | Set the target journal. |
+| `/grill-my-paper <paper> rounds=3` | Set the number of rounds, 1 to 4, counting the independent reviews as round 1 (details below). |
 | `/grill-my-paper <paper> model=opus` | Run the reviewers on a model other than the session's. The editor's part (casting, rulings, the report) stays on the session's model. |
 | `/grill-my-paper <paper> also=online_appendix.pdf` | Give reviewers another file, such as an appendix. For a TeX paper the appendix, figures, and bibliography it points to are found automatically. |
 | `/grill-my-paper <paper> reviewers: skeptic, champion, lit: corporate bond liquidity, auditor` | Choose the seats yourself. |
@@ -24,15 +25,27 @@ Arguments are free text; the forms above are examples, not strict syntax. They c
 
 ## Depths
 
-| Depth | Who sits | Debate round | Use it when |
+| Depth | Who sits | Rounds by default | Use it when |
 |---|---|---|---|
-| `quick` | editor-desk, skeptic, champion | No | First look, or a cheap check after small changes |
-| `standard` | quick + one literature specialist + identification or mechanism | Yes | The normal pre-submission review |
-| `full` | standard + second literature specialist, outsider, auditor, institutional if relevant | Yes | Final check before submitting |
-| `desk` | editor-desk (one per target journal), outsider | No | Testing the title, abstract and introduction, or choosing between journals |
+| `quick` | skeptic, champion, senior scholar | 1 (no debate) | First look, or a cheap check after small changes |
+| `standard` | quick + editor-desk + one literature specialist + identification or mechanism | 2 (one debate) | The normal pre-submission review |
+| `full` | standard + second literature specialist, auditor, institutional if relevant | 2 (one debate) | Final check before submitting |
+| `desk` | editor-desk (one per target journal), senior scholar | 1 (no debate) | Testing the title, abstract and introduction, or choosing between journals |
 
-Cost grows with seats and rounds: every reviewer reads the whole paper, and reads it again in the
-debate round.
+The `outsider` (a general-interest reader from another subfield) is in no preset. Add it with
+`reviewers:` or `add:` when you want to know whether readers outside the subfield will care.
+
+`rounds=` changes the number of rounds at any depth:
+
+- `rounds=1`: independent reviews only, no debate.
+- `rounds=2`: one debate, also at `quick` and `desk`.
+- `rounds=3` or `rounds=4`: extra debate rounds. In each, reviewers read one another's last answers
+  and reply again, on only the issues still in dispute. A reviewer who changes position has to say
+  why. If nothing is left to argue, the panel stops early and the report says so. Four is the limit.
+
+Cost grows with seats and rounds: every reviewer reads the whole paper, and reads it again in each
+debate round. Later rounds also add less: agreement reached after reviewers have read each other
+several times counts for little in the editor's rulings.
 
 ## What you get
 

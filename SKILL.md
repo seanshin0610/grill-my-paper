@@ -2,13 +2,14 @@
 name: grill-my-paper
 description: >
   Convene a simulated review panel for an academic paper draft (PDF or TeX). Independent reviewer
-  agents with different mandates (rejecting referee, champion, literature specialists, identification
-  referee, editor's first read, and others) each review the paper, cross-examine one another's
+  agents with different mandates (rejecting referee, champion, a senior scholar judging the
+  contribution, literature specialists, identification referee, editor's first read, and others) each
+  review the paper, cross-examine one another's
   points, and a handling editor rules on the disputes and writes a verdict plus a prioritized
   revision plan for the target journal. Tunes or saves reviewer personas only when the user asks.
   Trigger on "grill-my-paper", "grill my paper", "review panel", "have agents debate my paper",
   "stress-test my paper before submission", or "tune the skeptic / a reviewer".
-argument-hint: "<paper.pdf|.tex> [target=RFS] [depth=quick|standard|full] [model=opus] [also=appendix.pdf] [reviewers: ...]  |  tune <feedback>  |  personas  |  help"
+argument-hint: "<paper.pdf|.tex> [target=RFS] [depth=quick|standard|full] [rounds=1-4] [model=opus] [also=appendix.pdf] [reviewers: ...]  |  tune <feedback>  |  personas  |  help"
 disable-model-invocation: true
 ---
 
@@ -37,7 +38,7 @@ Route on the user's arguments (free text; no strict syntax):
 
 | The user gives | Do |
 |---|---|
-| A paper path (optionally target, depth, reviewer model, reviewer list) | **Review**: the workflow below |
+| A paper path (optionally target, depth, rounds, reviewer model, reviewer list) | **Review**: the workflow below |
 | A paper path plus an earlier run folder, or "re-run" | **Re-run after revision**: see the section near the end |
 | `tune ...`, or an explicit request to change how a reviewer or the skill works | Read `references/tuning.md` and follow it |
 | `personas`, `save <name>`, "add a reviewer type" | Read `references/tuning.md`, section "Managing the library" |
@@ -165,12 +166,26 @@ tunes and adds personas, so look rather than rely on the table below.
 
 **Presets** (use the user's choice, else the profile's default depth):
 
-| Depth | Roster | Rounds |
+| Depth | Roster | Rounds by default |
 |---|---|---|
-| `quick` | editor-desk, skeptic, champion | Round 1 only |
-| `standard` | editor-desk, skeptic, champion, literature-specialist (primary literature), identification *or* mechanism | Round 1 + cross-examination |
-| `full` | standard + a second literature-specialist, outsider, auditor, and institutional if the setting warrants | Round 1 + cross-examination |
-| `desk` | editor-desk (once per target journal), outsider | Round 1 only |
+| `quick` | skeptic, champion, senior-scholar | 1: Round 1 only |
+| `standard` | editor-desk, skeptic, champion, senior-scholar, literature-specialist (primary literature), identification *or* mechanism | 2: Round 1 + cross-examination |
+| `full` | standard + a second literature-specialist, auditor, and institutional if the setting warrants | 2: Round 1 + cross-examination |
+| `desk` | editor-desk (once per target journal), senior-scholar | 1: Round 1 only |
+
+**Rounds.** The depth sets the roster and a default number of rounds. `rounds=<n>` overrides the
+number at any depth; the count includes Round 1.
+
+- `rounds=1`: independent reviews only. No cross-examination, whatever the depth.
+- `rounds=2`: one cross-examination, including at `quick` and `desk`.
+- `rounds=3` or `rounds=4`: further exchanges after the cross-examination. In each, the reviewers
+  read one another's answers from the round before and answer again, on a docket you cut down to
+  what is still in dispute (Step 6).
+
+Four is the limit. If the user asks for more, run four and tell them so; if the value is not a whole
+number of at least one, ask. Do not add rounds the user did not ask for. Every extra round has each
+reviewer read everything again, and reviewers who keep reading one another drift toward agreement
+whether or not they are right, so more rounds cost more and prove less.
 
 **Casting principles:**
 
@@ -181,7 +196,20 @@ tunes and adds personas, so look rather than rely on the table below.
   both sides even at `standard` if the bridge is the contribution.
 - Use `identification` for empirical papers and `mechanism` for theory. Seat both when an empirical
   paper's contribution is a claim about a channel.
-- Stay at eight or fewer. Past that, reports repeat each other and the synthesis gets worse, not better.
+- The `senior-scholar` sits in every preset. The skeptic and the champion each have a stake in the
+  answer; this is the seat that says how big the contribution is with no stake in it, and at `desk`
+  its judgment of level is what bears on the choice of journal. Set its `area` from your reading, and
+  its `field` from the profile, or from the paper when the paper plainly belongs to another
+  discipline.
+- `editor-desk` sits at `standard`, `full`, and `desk`, and not at `quick`. With only three seats, a
+  first look needs a judgment of the contribution's size more than a second opinion on the opening
+  pages, and `desk` is the run that tests those pages.
+- `outsider` is in no preset. In the presets the senior scholar judges importance and the editor's
+  first read judges whether the paper lands, which covers most of what the outsider would say. Add
+  it when the paper is aimed at a general-interest journal and the open question is whether readers
+  outside the subfield will care, or when the user asks.
+- Do not go past the `full` roster (eight seats, nine with `institutional`). Beyond that, reports
+  repeat each other and the synthesis gets worse, not better.
 - If the user asks for a reviewer type that is not in the library ("someone from behavioral finance
   who thinks it is all sentiment", "a regulator"), write a new persona for it following
   `personas/_TEMPLATE.md` and put the full persona text in that reviewer's assignment file. Offer to
@@ -189,7 +217,7 @@ tunes and adds personas, so look rather than rely on the table below.
 - Honor explicit requests exactly: if the user names the reviewers or the number, that is the roster.
 
 **Confirm once before launching**, unless the user already specified the roster or depth. A run is
-expensive (every reviewer reads the full paper, and again in Round 2), and casting is the biggest
+expensive (every reviewer reads the full paper, and again in each later round), and casting is the biggest
 lever on quality. Show the roster as a table (reviewer, lens, why this paper needs them), state the
 target journal you will use, and give the scale ("6 reviewers, 2 rounds") and the reviewers' model if
 the user set one. Offer the adjacent
@@ -257,7 +285,7 @@ Launch all reviewers in parallel, in a single message, each as a fresh general-p
 
 **Which model.** Reviewers run on the session's model unless the user gives `model=<name>` (for
 example `model=opus` or `model=sonnet`). Then pass that name as the model of every reviewer subagent,
-in both rounds. If the user names a model for one seat only ("the skeptic on opus"), apply it to that
+in every round. If the user names a model for one seat only ("the skeptic on opus"), apply it to that
 seat. Do not choose a cheaper model on your own, because review quality is the product. If the harness
 does not accept the name the user gave, say so and ask; do not substitute another model silently,
 since they chose it for a reason (cost, speed, or a second opinion from a different model).
@@ -344,23 +372,32 @@ evidence against the paper: keep it off the docket and out of the rulings, and r
 found. A work that exists but does not say what the reviewer claimed supports nothing; if the
 reviewer's point depended on it, say so in the ruling.
 
-Skip this only when no citation falls in any of the three groups. After Round 2, run it again if a
-ruling depends on a citation first raised there, and have that run write to
-`citation_check_round2.md`, so the first file stays as it was.
+Skip this only when no citation falls in any of the three groups. After a later round, run it again
+if a ruling depends on a citation first raised there, and have that run write to
+`citation_check_round<N>.md` (N is the round that raised it), so the first file stays as it was.
 
-At `quick` and `desk` depth, skip to Step 7.
+If this run has one round (the default at `quick` and `desk`, or `rounds=1`), skip to Step 7.
 
-### Step 6. Round 2: cross-examination
+### Step 6. Cross-examination: Round 2 and any later rounds
 
 Read `references/cross-exam.md` and follow it. In short: select a docket of the contested issues, the
 serious solo issues, and the top consensus issues; send each reviewer the docket with the other
 reviewers' arguments and a role-specific task (the champion must answer the rejection case, the
-skeptic must attack the champion's best version, specialists adjudicate disputes in their area);
+skeptic must attack the champion's best version, the senior scholar says what the surviving
+contribution is worth, specialists adjudicate disputes in their area);
 collect positions and final votes.
 
-One round is the default. Further rounds mostly produce politeness and convergence. Run a second
-exchange only on a specific FATAL question that Round 2 left genuinely unresolved, and only between
+That is Round 2, and by default the cross-examination ends there. Further rounds mostly produce
+politeness and convergence. Without `rounds=`, the one exception is the old one: you may run a single
+further exchange on a specific FATAL question that Round 2 left genuinely unresolved, between only
 the reviewers involved.
+
+When the user asked for three or four rounds, run the later rounds as `references/cross-exam.md`
+describes under "Later rounds". Before each one, rewrite the docket so it holds only the issues still
+in dispute after the round before. The reviewers then read one another's answers from that round and
+answer again, and anyone who changes a position has to say what changed their mind. If nothing is
+still in dispute, stop there, even if rounds the user asked for remain: an exchange with nothing to
+argue about produces only agreement. Say in the report how many rounds ran and why you stopped early.
 
 ### Step 7. Synthesize as handling editor
 
@@ -370,7 +407,10 @@ Write `PANEL_REPORT.md` in the run folder using `references/synthesis-template.m
   paper. Where you cannot decide, say what evidence would decide it.
 - **Weigh evidence, not votes.** One well-evidenced fatal point outweighs five mild approvals.
   Independent agreement in Round 1 is the strongest signal the panel produces. Agreement that appears
-  only in Round 2, after reviewers have read each other, is much weaker.
+  only in Round 2, after reviewers have read each other, is much weaker, and agreement that first
+  appears in Round 3 or 4 is weaker still: by then everyone has read everyone twice. A position
+  changed in a late round is worth exactly the reason the reviewer gave for changing it. If they
+  gave none, disregard the change and rule on their earlier argument.
 - **Discount what deserves it**: points with no anchor in the paper, generic requests ("more
   robustness") with no named threat, novelty objections resting on citations the check could not
   confirm, and anything the paper already addresses.
@@ -383,7 +423,9 @@ Write `PANEL_REPORT.md` in the run folder using `references/synthesis-template.m
   comments you recommend ignoring and why; knowing what not to do is half the value.
 - **Separate ceiling problems from fixable problems.** If the binding constraint is the importance of
   the question, say so in the first paragraph. More robustness tables do not raise a ceiling; a
-  reframing or a different target journal might.
+  reframing or a different target journal might. When a senior scholar sat, their read is the panel's
+  main evidence on the ceiling; test it against what the literature specialist established as already
+  known, since a judgment of importance is only as good as its account of the prior.
 - **Stay honest about what this is.** The panel is a stress test by simulated reviewers, not a forecast
   of a real editorial decision. Say that once, briefly, and do not let it soften the content.
 
@@ -407,7 +449,7 @@ install command it prints and carry on; the review is complete without the PDF.
 2. List what the run produced, in one table, so the user can open any of it without searching the
    folder. State the run folder's full path once, above the table, then give one row per file in this
    order: the final report (the PDF, then the Markdown it was made from), each reviewer's Round 1
-   report, each reviewer's Round 2 response, and then the ledger, the docket, the citation checks, and
+   report, each reviewer's response in each later round, and then the ledger, the dockets, the citation checks, and
    the panel setup. For a reviewer's file, add that reviewer's recommendation, so the user can see
    which to open first. Where your interface turns file paths into links, write each file as a link;
    otherwise give its path inside the run folder. Build the table from a listing of the run folder,
@@ -442,13 +484,14 @@ Everything about the run lives in the run folder. Nothing is written to the skil
 ├── PANEL_REPORT.pdf     the same report, rendered for reading and sharing
 ├── 00_panel.md          paper facts, roster, why each reviewer was cast
 ├── ledger.md            issue ledger
-├── citation_check.md    the checker's verdicts (citation_check_round2.md for any raised in Round 2)
+├── citation_check.md    the checker's verdicts (citation_check_round<N>.md for any raised in a later round)
 ├── paper.txt            extracted text (page markers for a PDF; the source's own line numbers for TeX)
 ├── <appendix>.txt       online appendix and any other companion, when there is one
 ├── figures/, *.bib      figure files and bibliography gathered from a TeX source
 ├── prompts/<id>.md      each reviewer's assignment
 ├── round1/<id>.md       independent reports
-└── round2/<id>.md       cross-examination positions (plus docket.md)
+├── round2/<id>.md       cross-examination positions (plus docket.md)
+└── round3/, round4/     the same for later rounds, when they were run
 ```
 
 ## Re-run after revision
@@ -480,5 +523,6 @@ Knowing these helps you make sensible calls in situations the steps do not cover
   editor's rulings exist to cut that to the handful that matter.
 - **Leading the witness.** Tailoring that tells a reviewer what to find produces confirmation, not
   review.
-- **Polite convergence.** In Round 2 reviewers tend to agree with each other. The role-specific tasks
-  force the champion and skeptic to keep their mandates; treat late agreement with suspicion.
+- **Polite convergence.** In Round 2 reviewers tend to agree with each other, and more so with every
+  round after it. The role-specific tasks force the champion and skeptic to keep their mandates, and
+  in later rounds a changed position must come with its reason; treat late agreement with suspicion.

@@ -178,3 +178,22 @@ up to 300 for your role task and the closing sections. For a docket of eight ite
 
 Write it to the path the editor gives, then reply with only your final recommendation and whether it
 changed.
+
+### Later rounds
+
+The editor may run a third or a fourth round. You then get a shorter docket, holding only what is
+still in dispute, and the other reviewers' responses from the round before. Everything above still
+applies, with two additions.
+
+- Answer what the others wrote in the last round. Point to the argument you are answering. Do not
+  restate your earlier position as though nothing had been said since.
+- If you change a position you held in the last round, you must say what changed your mind: which
+  argument, or which passage of the paper. By now every reviewer has read every other, and agreement
+  comes easily. The editor disregards a changed position that gives no reason, so a move you cannot
+  explain is wasted. Holding a position you still think is right is as useful as moving.
+
+Use the Round 2 format with the round's number in the title and these changes: take positions only on
+the items still on the docket; where your position differs from the last round, open that item with
+`Changed from <ENDORSE | DISPUTE | QUALIFY> because: <reason>`; leave out the role task; and let the
+"got wrong or missed" section cover the last round. Keep to about 120 words an item. If you have
+nothing to add on what remains, say so in one line.
