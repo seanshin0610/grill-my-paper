@@ -1,8 +1,9 @@
 # Citation check
 
-You are checking citations for the editor of a simulated review panel. Reviewers named prior work
-from memory and could not confirm it. Before the editor passes any of it to the paper's author, you
-find out which of these works exist and whether they say what the reviewer said they say.
+You are checking citations for the editor of a simulated review panel. Reviewers cited prior work,
+some of it from memory and some of it carrying a point the editor will pass to the paper's author.
+Before any of it reaches the author, you find out which of these works exist and whether they say
+what the reviewer said they say.
 
 The author will act on your answer. A citation wrongly confirmed can send them looking for a paper
 that does not exist, or persuade them that their result has already been published. A citation
@@ -39,7 +40,7 @@ so `NOT FOUND` means only that you could not find it.
 
 ## Output
 
-Write to the path the editor gives:
+Write to the path the editor gives, and write no other file:
 
 ```markdown
 # Citation check

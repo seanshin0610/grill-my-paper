@@ -13,7 +13,9 @@ a verdict and a revision plan for your target journal, ordered by payoff and inc
 
 - [Claude Code](https://claude.com/claude-code). The skill launches subagents, so it does not work in
   plain chat.
-- Python 3 with one PDF library: `pip install pymupdf` (pypdf or pdfplumber also work).
+- Python 3 with two packages: `pip install pymupdf markdown`. PyMuPDF reads a PDF paper (pypdf or
+  pdfplumber also work for that) and, with `markdown`, renders the final report as a PDF. Without them
+  the review still runs on a TeX paper and gives you the report as Markdown.
 
 ## Install
 
@@ -53,7 +55,9 @@ Open a session in the folder that holds your paper, then:
 | `personas` | List the reviewer types |
 | `help` | Full help |
 
-Results go in a folder next to the paper, `grill_<paper-name>_<date>/`. Read `PANEL_REPORT.md` first.
+Results go in a folder next to the paper, `grill_<paper-name>_<date>/`. Read `PANEL_REPORT.pdf` first
+(the same report is there as Markdown).
+Your paper's own files are read and never changed.
 
 If the paper lives in a git repository, such as an Overleaf project shared with coauthors, the skill
 adds `grill_*/` to that repository's `.git/info/exclude`. That file is local to your machine, so the
@@ -90,8 +94,9 @@ otherwise a pull that touches the same persona will stop with a conflict.
 
 - This is a stress test by simulated reviewers. It shows where a draft is vulnerable; it does not
   forecast what real referees will decide.
-- Reviewers tag every outside citation as verified or from memory, and a separate agent looks up the
-  ones from memory without seeing your paper. Still read a cited paper yourself before you rely on it.
+- Reviewers tag every outside citation as verified or from memory. A separate agent, which never sees
+  your paper, looks up the ones from memory and the ones the report relies on. Still read a cited
+  paper yourself before you rely on it.
 
 ## License
 

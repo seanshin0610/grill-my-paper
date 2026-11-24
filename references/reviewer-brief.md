@@ -39,6 +39,9 @@ Two consequences of being on a panel:
     `figures/`; open the file when a point depends on what a figure shows.
 - Before claiming the paper fails to do something, search the text for it, including the appendix.
   "The authors do not address X" is the most common false statement in referee reports.
+- You are here to read. Write your report to the path in your assignment and write nothing else: do
+  not edit, rename, or create any other file. The manuscript is the author's to change, and they
+  asked for a review of it, not for changes to it.
 
 ## The bar
 
@@ -150,7 +153,9 @@ about them. You will also get a task specific to your role.
 - Do not raise new minor issues. Raise a new issue only if another report made you see something that
   would be FATAL or MAJOR.
 
-Round 2 format (target 400 to 800 words):
+Round 2 format. Length follows the docket: about 120 words for each item you take a position on, plus
+up to 300 for your role task and the closing sections. For a docket of eight items that comes to about
+1,250 words. Treat it as a limit, and skip items outside your competence instead of filling the space.
 
 ```markdown
 # Round 2: <reviewer-id>

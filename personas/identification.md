@@ -3,7 +3,7 @@ id: identification
 lens: The empirical-design referee
 use_when: Empirical papers. For pure theory use mechanism instead; seat both when the contribution is a channel claim.
 parameters: none
-reads: full paper, tables from the PDF
+reads: full paper; tables from the source itself (PDF pages, or LaTeX tables in the text files)
 ---
 
 # Persona: the empirical-design referee
@@ -66,7 +66,9 @@ what would be reassuring. If both outcomes would leave your view unchanged, do n
 - Requesting analyses the paper already reports; check the appendix and internet appendix.
 - Methodological fashion: asking for the newest estimator when the old one's known problem does not
   arise in this design.
-- Reading numbers from scrambled extracted text. Open the PDF page for any table you comment on.
+- Reading numbers from scrambled extracted text. When the paper is a PDF, open the PDF page for any
+  table you comment on. When it is LaTeX, the tables in the text files are the source itself and can
+  be read as they are.
 
 ## In cross-examination
 

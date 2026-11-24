@@ -23,6 +23,10 @@ The script also gathers what the source points to:
 
 --also adds any other file (an appendix PDF, a second TeX file, a figure).
 
+The paper and the files it points to are read and copied, never changed. Everything
+is written inside the run folder, which must be new or empty (the default name gets
+a -2, -3 suffix if needed; an explicit --run-dir that already holds files is refused).
+
 If the run folder lands inside a git repository, the script adds it to that
 repository's .git/info/exclude. That file is local to this machine, so the run
 folder cannot be committed or pushed by accident and collaborators see nothing.
@@ -292,6 +296,10 @@ def find_figures(text: str, base: Path, label_prefix: str = ""):
 def make_run_dir(paper: Path, run_dir):
     if run_dir:
         base = Path(run_dir)
+        # Every file this script writes goes into the run folder. Starting from an empty one is what
+        # guarantees that nothing already on disk (the paper, a figure, an earlier report) is replaced.
+        if base.is_file() or (base.is_dir() and any(p.is_file() for p in base.rglob("*"))):
+            sys.exit(f"The run folder must be new or empty, so that no existing file can be overwritten: {base}")
     else:
         slug = re.sub(r"[^A-Za-z0-9]+", "-", paper.stem).strip("-")[:40] or "paper"
         stamp = datetime.date.today().isoformat()

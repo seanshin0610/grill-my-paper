@@ -55,6 +55,22 @@ A reaction to a reviewer's output ("the skeptic was generic") is conversation, n
 a persona. Respond to it as part of discussing the paper. You may mention once that `tune` would make
 the change permanent, and then leave it to them.
 
+### A review does not change the paper
+
+The paper's own files, and everything else already in the paper's folder, are read and never
+written. This holds at every step: setup, both review rounds, the citation check, and the synthesis.
+The extractor copies what reviewers need into the run folder, and you and every agent you launch
+write there and nowhere else. An author who asks for a review expects a report. Finding that a tool
+also altered the manuscript, perhaps one shared with coauthors, is the worst surprise this skill
+could produce, so do not fix a typo, tidy a file, or apply a reviewer's suggestion along the way.
+
+Two things do appear in the paper's folder, and neither is a paper file: the run folder, and, when
+the folder is a git repository, one line in `.git/info/exclude` (Step 1).
+
+Revising the paper is separate work. It starts only when the user asks for an edit after seeing the
+report. Offering to work through the revision plan (Step 8) is not that request, and neither is a
+recommendation in the report.
+
 ### Help
 
 Show `references/help.md` to the user as written. Then add two things that the static page cannot
@@ -80,11 +96,12 @@ All paths are relative to this skill's base directory (shown when the skill load
 | `personas/_TEMPLATE.md` | How to write a new reviewer type |
 | `references/reviewer-brief.md` | Ground rules and report format shared by every reviewer |
 | `references/cross-exam.md` | Round 2 protocol |
-| `references/citation-check.md` | Instructions for the agent that looks up citations reviewers could not verify |
+| `references/citation-check.md` | Instructions for the agent that looks up citations: the ones reviewers could not verify, and the ones a ruling rests on |
 | `references/synthesis-template.md` | Structure of the final panel report |
 | `references/tuning.md` | Changing a persona when the user asks; saving and listing personas |
 | `references/help.md` | The help page shown for `help` or no arguments. Keep it in step when commands or depths change. |
 | `scripts/extract_paper.py` | Creates the run folder; extracts the paper to text; gathers the appendix, figures, and bibliography; keeps the run folder out of a surrounding git repository |
+| `scripts/report_to_pdf.py` | Renders the finished `PANEL_REPORT.md` as `PANEL_REPORT.pdf` for reading and sharing |
 ## Review workflow
 
 ### Step 1. Set up the run and read the paper
@@ -123,7 +140,8 @@ pymupdf`). It prints a JSON summary. Read it, because the assignments in Step 3 
   the run folder is inside a repository and not excluded, warn the user.
 
 If the paper's folder is not writable from this session, or the user wants the output elsewhere, pass
-`--run-dir <folder>`.
+`--run-dir <folder>`. It must be a new or empty folder. The script refuses any other, so that it can
+never overwrite a file that was already there.
 
 Read the defaults from `profile.md` if it exists, otherwise from `profile.default.md`. Then read the
 whole paper yourself, and the parts of the appendix that carry the evidence (the
@@ -287,13 +305,25 @@ Write `ledger.md` in the run folder: one row per distinct issue across all repor
 - Record literature claims separately with their verification tags. An unverified "this has been done
   by X" must never reach the author stated as fact.
 
-#### Check the citations reviewers could not verify
+#### Check the citations
 
-If any report cites outside work tagged `[from memory, unverified]`, or with no tag at all, have those
-citations looked up before you go on. Launch one subagent on Sonnet (`model: "sonnet"`), whatever
-model the reviewers ran on: this is lookup work, which a smaller model does well and cheaply. Give it
-each citation with the claim the reviewer attached to it, and nothing else. It does not need the
-paper, and an agent that never sees the unpublished manuscript cannot put any of it into a search.
+Before you go on, have three kinds of citation looked up:
+
+- those a reviewer tagged `[from memory, unverified]`;
+- those with no tag, including a bare factual claim about a cited work (how a survey defined its
+  sample, what a number in it was);
+- those a ruling or the revision plan will rest on, even when a reviewer tagged them `[verified]`. A
+  reviewer's tag is that reviewer's own report, and these are the citations the author will act on,
+  so they get a second, independent look. Usually this is three to six: the closest prior work in a
+  novelty dispute, and any source whose numbers the report will quote.
+
+A citation outside the third group that another reviewer verified in the same round does not need to
+go.
+
+Launch one subagent on Sonnet (`model: "sonnet"`), whatever model the reviewers ran on: this is lookup
+work, which a smaller model does well and cheaply. Give it each citation with the claim the reviewer
+attached to it, and nothing else. It does not need the paper, and an agent that never sees the
+unpublished manuscript cannot put any of it into a search.
 
 ```
 You are checking citations for the editor of a review panel.
@@ -314,8 +344,9 @@ evidence against the paper: keep it off the docket and out of the rulings, and r
 found. A work that exists but does not say what the reviewer claimed supports nothing; if the
 reviewer's point depended on it, say so in the ruling.
 
-Skip this when every citation is already verified. After Round 2, run it again only if a ruling
-depends on a citation first raised there.
+Skip this only when no citation falls in any of the three groups. After Round 2, run it again if a
+ruling depends on a citation first raised there, and have that run write to
+`citation_check_round2.md`, so the first file stays as it was.
 
 At `quick` and `desk` depth, skip to Step 7.
 
@@ -356,11 +387,26 @@ Write `PANEL_REPORT.md` in the run folder using `references/synthesis-template.m
 - **Stay honest about what this is.** The panel is a stress test by simulated reviewers, not a forecast
   of a real editorial decision. Say that once, briefly, and do not let it soften the content.
 
+When the report is finished, make the copy people will read:
+
+```bash
+python "<skill-dir>/scripts/report_to_pdf.py" "<run>/PANEL_REPORT.md"
+```
+
+This writes `PANEL_REPORT.pdf` beside it (A4; add `--paper letter` for US Letter). Raw Markdown is
+hard on the eyes, and a PDF is what an author prints or sends to coauthors. Only the final report gets
+one; the individual reports and the ledger stay as Markdown. The Markdown file remains the source:
+if you edit the report afterwards, run the script again so the two do not drift apart. The script
+needs the `markdown` package as well as PyMuPDF. If it stops for a missing package, pass on the
+install command it prints and carry on; the review is complete without the PDF.
+
 ### Step 8. Close the loop
 
-1. Tell the user where the report is and give the bottom line in a few sentences: where the paper
-   stands, the biggest risk, the highest-leverage change. Do not paste the whole report.
+1. Tell the user where the report is (the PDF, and the Markdown it was made from) and give the bottom
+   line in a few sentences: where the paper stands, the biggest risk, the highest-leverage change. Do
+   not paste the whole report.
 2. Offer the next move: work through the revision plan together, or re-run the panel after revising.
+   Then wait for the answer. Do not start editing the paper yourself.
 3. If any reviewer was ad hoc, say that it can be kept for future runs with `save <name>`.
 
 Everything about the run lives in the run folder. Nothing is written to the skill folder.
@@ -370,9 +416,10 @@ Everything about the run lives in the run folder. Nothing is written to the skil
 ```
 <paper-folder>/grill_<paper-name>_<YYYY-MM-DD>/
 ├── PANEL_REPORT.md      the deliverable
+├── PANEL_REPORT.pdf     the same report, rendered for reading and sharing
 ├── 00_panel.md          paper facts, roster, why each reviewer was cast
 ├── ledger.md            issue ledger
-├── citation_check.md    verdicts on citations reviewers could not verify, when there were any
+├── citation_check.md    the checker's verdicts (citation_check_round2.md for any raised in Round 2)
 ├── paper.txt            extracted text (page markers for a PDF; the source's own line numbers for TeX)
 ├── <appendix>.txt       online appendix and any other companion, when there is one
 ├── figures/, *.bib      figure files and bibliography gathered from a TeX source
@@ -405,7 +452,7 @@ Knowing these helps you make sensible calls in situations the steps do not cover
 - **Invented literature.** A confident, wrong "X (2019) already shows this" can send the author
   chasing a paper that does not exist or abandoning a real contribution. Citations carry verification
   tags from the reviewer through to the final report, and a separate agent looks up the ones a
-  reviewer could not verify.
+  reviewer could not verify and the ones a ruling rests on.
 - **Laundry lists.** Six reviewers can produce sixty comments. The ledger, the docket, and the
   editor's rulings exist to cut that to the handful that matter.
 - **Leading the witness.** Tailoring that tells a reviewer what to find produces confirmation, not

@@ -111,7 +111,7 @@ matter of taste. This section is required.>
 ## 8. Files
 
 - Individual reports: `round1/`  · Cross-examination: `round2/` · Issue ledger: `ledger.md` ·
-  Citation check: `citation_check.md`
+  Citation check: `citation_check.md` (and `citation_check_round2.md` when there was a second one)
 ```
 
 ## Adjustments by depth

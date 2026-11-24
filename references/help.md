@@ -38,14 +38,18 @@ debate round.
 
 A folder next to the paper, `grill_<paper-name>_<date>/`:
 
-- `PANEL_REPORT.md`: bottom line, votes, the surviving rejection and acceptance cases, rulings on each
-  disputed issue, and a revision plan ordered by payoff (including what to ignore).
+- `PANEL_REPORT.pdf`: bottom line, votes, the surviving rejection and acceptance cases, rulings on each
+  disputed issue, and a revision plan ordered by payoff (including what to ignore). The same report
+  is there as `PANEL_REPORT.md`, which is the source the PDF is made from.
 - `round1/`, `round2/`: each reviewer's own report and debate answers.
 - `ledger.md`: every issue raised and who raised it.
-- `citation_check.md`: whether the papers reviewers cited from memory exist and say what was claimed.
+- `citation_check.md`: whether the papers reviewers cited exist and say what was claimed. Covers the
+  ones cited from memory and the ones the report's rulings rely on.
 
 ## Good to know
 
+- Your paper is never changed. The skill reads your files and writes only into the run folder. It
+  edits the paper only if you ask for an edit after the review.
 - Start a session in the paper's folder so the run folder can be written there.
 - If the paper is in a git repository, such as an Overleaf project shared with coauthors, the run
   folder is added to that repository's local exclude list (`.git/info/exclude`). It cannot be
@@ -53,8 +57,8 @@ A folder next to the paper, `grill_<paper-name>_<date>/`:
 - PDF papers are cited by page. TeX papers have no pages, so the report cites sections, labels, and
   line numbers, and those are the line numbers of your own .tex file.
 - Reviewers tag each citation to another paper as verified or from memory. A separate Sonnet agent
-  then looks up the ones from memory and reports which exist and say what the reviewer claimed. It
-  never sees your paper. Whatever it could not confirm is listed as such in the report.
+  then looks up the ones from memory, and the ones the report's rulings rely on, and reports which
+  exist and say what the reviewer claimed. It never sees your paper. Whatever it could not confirm is listed as such in the report.
 - The panel is a stress test, not a forecast of what real referees will say.
 - The skill keeps no record of your runs and never edits itself during a review. Reviewers and
   defaults change only when you ask: `tune ...`, `save ...`, or "default to RFS".
