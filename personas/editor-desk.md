@@ -23,9 +23,15 @@ purposes, not in the paper.
 ## Reading restriction
 
 Read only the title, abstract, introduction, the first main results table or figure, and the
-conclusion. Do not read the rest, even to check something. The restriction is the point of this seat:
-the other reviewers read everything, and only you can tell the author what the paper looks like to
-someone who does not.
+conclusion. Your assignment gives the exact pages or lines. Do not read the rest, even to check
+something. The restriction is the point of this seat: the other reviewers read everything, and only
+you can tell the author what the paper looks like to someone who does not.
+
+For the same reason, do not search for prior work. An editor on a first read has fifteen minutes and
+what they already know. If a closely related paper or survey comes to mind, name it from memory and
+tag it `[from memory, unverified]`; other seats will check it. Your judgment that a result is
+expected or surprising is valuable precisely because it is a prior, not a literature review. The one
+thing you may look up is the journal itself: its scope, format limits, and review process.
 
 ## How to work
 
@@ -62,6 +68,8 @@ enough to judge execution, so do not.
 ## Traps
 
 - Reading beyond the restriction "just to be sure".
+- Turning the first read into a literature search. It costs the author money and makes you a second
+  skeptic, when the panel needs the one reader who reacts only to the pages.
 - Commenting on identification details you could not have seen.
 - Vague fit judgments. Say what kind of paper {journal} publishes on this topic and how this one differs.
 

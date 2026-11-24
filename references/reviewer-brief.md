@@ -22,12 +22,18 @@ Two consequences of being on a panel:
 
 ## Reading the paper
 
-- `paper.txt` is the extracted text with `===== Page N =====` markers that match the PDF's pages. Read
-  the whole paper, including the appendix where it bears on your points, unless your persona restricts
-  your reading.
-- Text extraction scrambles tables and loses figures. When a point depends on a number, a table's
-  layout, or a figure, open that page of the PDF and look at it. Never report something as an error in
-  the paper that might be an extraction artifact without checking the PDF.
+- Your assignment lists the materials: `paper.txt`, any appendix or companion text files, a `figures/`
+  folder, and sometimes the original PDF and a .bib file. Read the whole paper, and the appendix where
+  it bears on your points, unless your persona restricts your reading.
+- How you cite locations depends on the source, and your assignment says which applies:
+  - **From a PDF:** `paper.txt` has `===== Page N =====` markers that match the PDF's pages. Cite pages.
+    Extraction scrambles tables and drops figures, so when a point depends on a number, a table's
+    layout, or a figure, open that page of the PDF. Never report something as an error in the paper
+    that might be an extraction artifact without checking the PDF.
+  - **From LaTeX:** there are no pages. `===== File: name =====` markers show where each source file
+    starts. Cite a section, a figure or table label, or a line number of `paper.txt`. Tables are
+    inlined as LaTeX and are reliable. Figures are separate files in `figures/`; open the file when a
+    point depends on what a figure shows.
 - Before claiming the paper fails to do something, search the text for it, including the appendix.
   "The authors do not address X" is the most common false statement in referee reports.
 
@@ -47,8 +53,9 @@ Judge in this order, because a weakness higher up is rarely rescued lower down:
 
 ## Rules for every point you raise
 
-1. **Anchor it.** Name the section, table, figure, equation, or page, and state the claim you are
-   responding to. A point that could be pasted into a report on any other paper is not a point.
+1. **Anchor it.** Name the section, table, figure, equation, and the page (or the line of `paper.txt`
+   when the source has no pages), and state the claim you are responding to. A point that could be
+   pasted into a report on any other paper is not a point.
 2. **Say why it matters for the decision.** Connect it to contribution, execution, or exposition. If it
    would not affect an editor's decision, it belongs under minor points or nowhere.
 3. **Say what would resolve it.** Name the analysis, specification, comparison, or rewritten claim, and
@@ -62,7 +69,9 @@ Judge in this order, because a weakness higher up is rarely rescued lower down:
    Never fabricate a reference. "There is work on X that I cannot pin down" is acceptable; a plausible
    citation that turns out not to exist does real damage. Search to confirm the papers you cite.
    Hunting for prior work beyond that belongs to the literature specialist and the skeptic; other
-   seats should spend their effort on their own lens.
+   seats should spend their effort on their own lens. The manuscript is usually unpublished, so
+   search by topic or by the authors and titles of work it cites; do not paste the manuscript's
+   title, abstract, or passages into a search engine.
 6. **Be selective and rank.** At most five major issues, most important first. If your honest judgment
    is that one problem decides everything, give that one and say the rest is secondary. Do not disguise
    "this is not interesting enough" as a list of medium-sized fixable flaws; the author would fix them
@@ -79,7 +88,11 @@ Judge in this order, because a weakness higher up is rarely rescued lower down:
 
 ## Report format (Round 1)
 
-Use this structure so the editor can collate reports. Target 700 to 1,300 words.
+Use this structure so the editor can collate reports. Write 700 to 1,300 words, and treat 1,300 as a
+limit, not a target. The editor reads every report in full and the author reads several, so each
+extra paragraph is paid for by everyone downstream, and a long report buries its own top issue. Check
+the count before you finish. If you are over, cut in this order: minor points, strengths, then your
+lowest-ranked issue. Do not cut anchors, the resolution of an issue, or your lens-specific section.
 
 ```markdown
 # Round 1 report: <reviewer-id> (<lens>)
@@ -94,7 +107,7 @@ of the abstract.>
 
 ## Issues, ranked
 ### 1. [FATAL | MAJOR] <short title>
-- **Where:** <section / table / page>
+- **Where:** <section / table / figure, with page or line>
 - **The paper claims:** <the claim at issue, quoted or closely paraphrased>
 - **Concern:** <what is wrong or unconvincing>
 - **Why it matters for the decision:** <...>

@@ -1,19 +1,19 @@
 # Tuning reviewers and managing the persona library
 
-The personas are meant to improve with use. Every time the user reacts to what a reviewer wrote, that
-reaction is evidence about a prompt. This file says how to turn it into a better prompt without
-overfitting to one paper or letting the personas bloat.
+This file is for the occasions when the user asks to change the skill: `tune <feedback>`, `personas`,
+`save <name>`, or a request in so many words to change a reviewer or a default.
 
-Use it when the user reacts to a reviewer or to the panel report ("the skeptic was generic", "the delta
-table was exactly what I needed", "the champion is too rosy", "stop asking for placebo tests"), or
-invokes `tune`, `personas`, or `save`.
+It is not triggered by a reaction to a reviewer's output during a conversation. "The skeptic was
+generic" is a comment on a report; answer it as part of discussing the paper. Nothing in the skill
+folder changes unless the user asks for it to change.
 
 ## Tuning from feedback
 
 ### 1. Get the evidence
 
-Find the run the feedback is about: the one in this conversation, or the latest row of
-`history/runs.md` unless the user names another. Read three things for the reviewer in question:
+Find the run the feedback is about: the one in this conversation, or the run folder the user names
+(it sits next to the paper as `grill_<paper-name>_<date>`). If you cannot tell which run is meant,
+ask. Read three things for the reviewer in question:
 
 - their assignment (`prompts/<id>.md`),
 - what they produced (`round1/<id>.md`, and `round2/<id>.md` if it exists),
@@ -23,8 +23,8 @@ Do not tune from the user's sentence alone. "Generic" can mean the mandate was v
 named the wrong literature, the reviewer had no search tool, or the paper gave them little to work
 with. Each has a different remedy, and only the files tell you which it was.
 
-If the user's feedback is itself vague ("the lit specialist was bad"), ask what specifically they
-wanted and did not get, or point to the passage you think they mean and confirm.
+If the feedback is vague ("the lit specialist was bad"), ask what specifically they wanted and did
+not get, or point to the passage you think they mean and confirm.
 
 ### 2. Locate the fault
 
@@ -35,7 +35,7 @@ wanted and did not get, or point to the passage you think they mean and confirm.
 | The shared brief | The same complaint applies to several reviewers: too long, inflated severity, unanchored points, format | `references/reviewer-brief.md` |
 | Cross-examination | Reviewers caved, talked past each other, or the docket missed the real dispute | `references/cross-exam.md` |
 | The synthesis | The reports were fine but the editor's rulings or revision plan were weak | `SKILL.md` Step 7 or `references/synthesis-template.md` |
-| The user's standing preference | Not a quality problem; the user wants something different by default (always seat the auditor, default to RFS, shorter reports) | `profile.md` |
+| The user's standing preference | Not a quality problem; the user wants something different by default | `profile.md` (see "Change defaults") |
 | Nothing fixable by a prompt | The reviewer could not have known (a working paper not online, a private institutional fact), or the paper really is ambiguous there | Change nothing. Say so. |
 
 Be willing to land on the last row. Changing a prompt in response to every miss makes it worse.
@@ -60,39 +60,29 @@ Prefer, in this order:
 3. Adding a line under "Calibration notes" at the end of the persona. Use this only for a specific
    exception that does not fit the body.
 
-Show the user the change as a short before-and-after and apply it. Their feedback is the instruction;
-do not ask permission for an edit that follows directly from it. Do ask first if the change would
-alter a persona's mandate or affect every reviewer (the shared brief), since those shift the whole panel.
+The user asked for the change, so make it and show it as a short before-and-after. Ask first only if
+the change would alter a persona's mandate or affect every reviewer (the shared brief), since those
+shift the whole panel. Change only what the feedback calls for; do not tidy other parts of the file
+while you are there.
 
 ### 5. Keep what worked
 
-Positive feedback is as useful as negative and is lost more easily. When the user singles out a comment
-as exactly right, add it to the persona under a section "What good looks like" (create the section
-above "Calibration notes" if it is not there):
+When the user asks to keep a comment as an example of what they want, add it to the persona under a
+section "What good looks like" (create the section above "Calibration notes" if it is not there):
 
 - State the pattern in one line (what made it good), then give the comment with the paper's specifics
-  replaced by placeholders such as [main outcome] and [Table N], in at most 80 words.
+  replaced by placeholders such as [main outcome] and [Table N], in at most 80 words. Nothing that
+  identifies the user's paper goes into a persona.
 - Keep at most three exemplars per persona. When adding a fourth, drop the weakest. Examples steer a
   reviewer strongly, and too many, or ones that are too specific, produce imitations.
 
-### 6. Log it
-
-Append a row to `history/feedback.md`: date, run, reviewer or file changed, the user's feedback in
-their own words, your diagnosis, and what changed. If the file does not exist, create it with those
-six columns as the header row. This log is how later tuning sessions tell a recurring complaint from
-a one-off.
-
-Before editing, skim the log for the same persona. If the same complaint has come up before and an
-edit was already made for it, the earlier edit did not work: revise the approach instead of adding
-another layer.
-
-### 7. Offer the only real test
+### 6. Offer the only real test
 
 A prompt change is a guess until it is tried. Offer to re-run just that reviewer on the same paper with
-the revised persona (one subagent, same assignment, output to `round1/<id>.v2.md`) and show the old and
-new reports side by side. Do it if the user says yes.
+the revised persona (one subagent, same assignment, output to `round1/<id>.v2.md` in the run folder)
+and show the old and new reports side by side. Do it if the user says yes.
 
-### 8. Prune
+### 7. Prune
 
 When a persona's "Calibration notes" grow past about six lines, fold them into the body and clear the
 section. When a persona passes about 90 lines, look for instructions that are no longer earning their
@@ -104,20 +94,18 @@ unevenly.
 ### List the personas
 
 Search `personas/` for the frontmatter lines (`^(id|lens|use_when|parameters):`), skipping
-`_TEMPLATE.md`, and show a table. Count how often each id appears in the roster column of
-`history/runs.md` and show the count, so the user can see their most-used seats and their usual panel.
+`_TEMPLATE.md`, and show them as a table.
 
 ### Save an ad hoc reviewer
 
-After a run that used an ad hoc reviewer, or when the user says `save <name>`:
+When the user says `save <name>` after a run that used an ad hoc reviewer:
 
 1. Take the persona text from that reviewer's assignment file (`prompts/<id>.md`).
 2. Replace anything specific to that paper with a `{parameter}` and list the parameters in the
    frontmatter. A saved persona must make sense for the next paper.
 3. Check it against the five criteria at the top of `personas/_TEMPLATE.md`. If it has no deliverable
    of its own or no named traps, add them now; that is usually why an ad hoc reviewer felt thin.
-4. If the user's reaction to the reviewer's report is known, apply it before saving.
-5. Save as `personas/<id>.md` and tell the user how to seat it (`reviewers: ..., <id>`).
+4. Save as `personas/<id>.md` and tell the user how to seat it (`reviewers: ..., <id>`).
 
 ### Add a reviewer type from a description
 
@@ -131,16 +119,15 @@ from it, not its paper-specific content.
 
 Fork a persona (copy to a new id) when the user wants a variant that should coexist with the original,
 such as a journal-specific skeptic. Retire a persona only when the user asks; move it to
-`personas/retired/` so its calibration history is kept.
+`personas/retired/` so its text is kept.
 
 ### Change defaults
 
-Standing preferences go in `profile.md`: default target journal, default depth, seats to always or
-never include, report length. Edit that file, and confirm the new default to the user in one line.
+When the user asks to change a default (target journal, depth, seats to always or never include,
+report length), put it in `profile.md`. If `profile.md` does not exist yet, create it as a copy of
+`profile.default.md` and then make the change. Confirm the new default to the user in one line.
 
 ## After any change
 
 These files live in the user's own skills folder, so edits persist across sessions. If the folder is a
-git repository, mention that the change is uncommitted and offer to commit it; do not commit unasked.
-`profile.md` and the logs in `history/` are ignored by git on purpose: they hold the user's own
-settings, paper paths, and feedback, and should not travel with a shared copy of the skill.
+git repository, say that the change is uncommitted; do not commit or push unasked.

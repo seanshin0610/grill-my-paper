@@ -10,11 +10,12 @@ disputed points, and an editor writes a verdict and a revision plan for your tar
 | `/grill-my-paper <paper.pdf or .tex>` | Review at the default depth. Asks the target journal and confirms the panel before starting. |
 | `/grill-my-paper <paper> depth=quick` | Pick a depth: `quick`, `standard`, `full`, or `desk` (table below). |
 | `/grill-my-paper <paper> target=RFS` | Set the target journal. |
+| `/grill-my-paper <paper> also=online_appendix.pdf` | Give reviewers another file, such as an appendix. For a TeX paper the appendix, figures, and bibliography it points to are found automatically. |
 | `/grill-my-paper <paper> reviewers: skeptic, champion, lit: corporate bond liquidity, auditor` | Choose the seats yourself. |
 | `/grill-my-paper <paper> add: a behavioral finance referee who thinks it is all sentiment` | Add any reviewer you can describe. A new persona is written for it, and you can save it afterwards. |
 | `/grill-my-paper <revised paper> rerun` | After revising: same panel, checks which earlier issues are resolved. |
 | `/grill-my-paper tune the skeptic was too generic on identification` | Improve a reviewer from what you liked or disliked in a past run. |
-| `/grill-my-paper personas` | List the reviewer types and how often each has been seated. |
+| `/grill-my-paper personas` | List the reviewer types. |
 | `/grill-my-paper save <name>` | Save a reviewer invented during a run to the library. |
 | `/grill-my-paper help` | This page. |
 
@@ -44,7 +45,12 @@ A folder next to the paper, `grill_<paper-name>_<date>/`:
 ## Good to know
 
 - Start a session in the paper's folder so the run folder can be written there.
+- If the paper is in a git repository, such as an Overleaf project shared with coauthors, the run
+  folder is added to that repository's local exclude list (`.git/info/exclude`). It cannot be
+  committed or pushed by accident, and coauthors see no change.
+- PDF papers are cited by page; TeX papers have no pages, so reviewers cite sections, labels, and
+  line numbers of `paper.txt`.
 - Citations to other papers are tagged verified or unverified. Check the unverified ones by hand.
 - The panel is a stress test, not a forecast of what real referees will say.
-- Defaults (field, target journals, depth, seats to always include) live in `profile.md`. Say
-  "default to RFS" or "always seat the auditor" to change them.
+- The skill keeps no record of your runs and never edits itself during a review. Reviewers and
+  defaults change only when you ask: `tune ...`, `save ...`, or "default to RFS".

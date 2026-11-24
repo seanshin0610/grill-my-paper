@@ -1,6 +1,5 @@
-# Personal, per-user files. Created on first use; never shared.
+# The user's own defaults. Created only when they ask to change one; never shared.
 profile.md
-history/*.md
 
 # Python
 __pycache__/

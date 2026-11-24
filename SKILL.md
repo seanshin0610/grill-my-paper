@@ -5,10 +5,10 @@ description: >
   agents with different mandates (rejecting referee, champion, literature specialists, identification
   referee, editor's first read, and others) each review the paper, cross-examine one another's
   points, and a handling editor rules on the disputes and writes a verdict plus a prioritized
-  revision plan for the target journal. Also tunes and saves reviewer personas from the user's
-  feedback on past runs. Trigger on "grill-my-paper", "grill my paper", "review panel", "have agents
-  debate my paper", "stress-test my paper before submission", or "tune the skeptic / a reviewer".
-argument-hint: "<paper.pdf|.tex> [target=RFS] [depth=quick|standard|full] [reviewers: ...]  |  tune <feedback>  |  personas  |  help"
+  revision plan for the target journal. Tunes or saves reviewer personas only when the user asks.
+  Trigger on "grill-my-paper", "grill my paper", "review panel", "have agents debate my paper",
+  "stress-test my paper before submission", or "tune the skeptic / a reviewer".
+argument-hint: "<paper.pdf|.tex> [target=RFS] [depth=quick|standard|full] [also=appendix.pdf] [reviewers: ...]  |  tune <feedback>  |  personas  |  help"
 disable-model-invocation: true
 ---
 
@@ -39,20 +39,31 @@ Route on the user's arguments (free text; no strict syntax):
 |---|---|
 | A paper path (optionally target, depth, reviewer list) | **Review**: the workflow below |
 | A paper path plus an earlier run folder, or "re-run" | **Re-run after revision**: see the section near the end |
-| `tune ...`, or any reaction to a reviewer's output ("the skeptic was generic", "loved the delta table") | Read `references/tuning.md` and follow it |
+| `tune ...`, or an explicit request to change how a reviewer or the skill works | Read `references/tuning.md` and follow it |
 | `personas`, `save <name>`, "add a reviewer type" | Read `references/tuning.md`, section "Managing the library" |
 | `help`, `?`, no arguments, or a question about how to use the skill | **Help**: see below |
+
+### The skill does not change itself
+
+A review reads this folder and writes only to the run folder. Do not log runs, count usage, or edit
+any file in this folder as a side effect of doing a review. Files here change only when the user
+explicitly asks: `tune`, `save`, or a request to change a default. This is the user's tool, and they
+decide what it becomes; a tool that keeps records of their papers or quietly rewrites its own
+instructions is doing something they did not ask for.
+
+A reaction to a reviewer's output ("the skeptic was generic") is conversation, not a request to edit
+a persona. Respond to it as part of discussing the paper. You may mention once that `tune` would make
+the change permanent, and then leave it to them.
 
 ### Help
 
 Show `references/help.md` to the user as written. Then add two things that the static page cannot
-know, because the user changes them over time:
+know, because the user may have changed them:
 
 - **Reviewer types available now**: a table built from the frontmatter of every file in `personas/`
-  (skip `_TEMPLATE.md`) with columns id, lens, when to use, and parameters, plus how many times each id
-  appears in the roster column of `history/runs.md` (zero for all if that file does not exist yet).
-- **Current defaults** from `profile.md`, or from `profile.default.md` if the user has no `profile.md`
-  yet: target journals, default depth, standing preferences.
+  (skip `_TEMPLATE.md`) with columns id, lens, when to use, and parameters.
+- **Current defaults** from `profile.md` if it exists, otherwise `profile.default.md`: target
+  journals, default depth, standing preferences.
 
 Help reads only those small files. Do not read a paper or launch any reviewer for it, and do not ask
 the user for a paper path; end by pointing at the first command they are most likely to want.
@@ -63,38 +74,55 @@ All paths are relative to this skill's base directory (shown when the skill load
 
 | Path | What it is |
 |---|---|
-| `profile.md` | The user's own defaults: field, target journals, default depth, standing preferences. Created from `profile.default.md` on first use. Personal; git ignores it. |
-| `profile.default.md` | The starting defaults shipped with the skill |
+| `profile.default.md` | The defaults shipped with the skill: field, target journals, default depth |
+| `profile.md` | The user's own defaults. Exists only once the user has asked to change one; it then replaces `profile.default.md`. Git ignores it. |
 | `personas/*.md` | The reviewer library. One file per reviewer type. This is what tuning edits. |
 | `personas/_TEMPLATE.md` | How to write a new reviewer type |
 | `references/reviewer-brief.md` | Ground rules and report format shared by every reviewer |
 | `references/cross-exam.md` | Round 2 protocol |
 | `references/synthesis-template.md` | Structure of the final panel report |
-| `references/tuning.md` | Improving personas from feedback; saving and listing personas |
+| `references/tuning.md` | Changing a persona when the user asks; saving and listing personas |
 | `references/help.md` | The help page shown for `help` or no arguments. Keep it in step when commands or depths change. |
-| `scripts/extract_paper.py` | Creates the run folder and extracts the paper to text with page markers |
-| `history/runs.md`, `history/feedback.md` | Log of runs and of feedback-driven changes. Created on first use. Personal; git ignores them. |
-
+| `scripts/extract_paper.py` | Creates the run folder; extracts the paper to text; gathers the appendix, figures, and bibliography; keeps the run folder out of a surrounding git repository |
 ## Review workflow
 
 ### Step 1. Set up the run and read the paper
 
-Run the extractor. It creates a run folder next to the paper and writes `paper.txt` with page markers:
+Run the extractor. It creates a run folder next to the paper and gathers the paper's materials there:
 
 ```bash
-python "<skill-dir>/scripts/extract_paper.py" "<path-to-paper>"
+python "<skill-dir>/scripts/extract_paper.py" "<path-to-paper>" [--also "<file>" ...]
 ```
 
-It prints the run folder path and a summary (pages, words, where references and appendix seem to
-start, any pages with almost no text). If the PDF looks scanned (very few words per page), reviewers
-will have to read the PDF pages directly; tell them so in their assignments. If the paper's folder is
-not writable from this session, or the user wants the output elsewhere, pass `--run-dir <folder>`.
-Use `python3` where `python` is not available. The script needs one PDF library (`pip install pymupdf`).
+Use `python3` where `python` is not available. The script needs one PDF library (`pip install
+pymupdf`). It prints a JSON summary. Read it, because the assignments in Step 3 are built from it:
 
-Read `profile.md` for defaults; if it does not exist, copy `profile.default.md` to `profile.md` first.
-Then read the whole paper yourself. You are the handling editor: you
-cannot cast the right panel, or later rule on a dispute between two reviewers, for a paper you have
-only skimmed.
+- **`anchor`** says how reviewers cite locations. A PDF gives `pages`: `paper.txt` has
+  `===== Page N =====` markers that match the PDF. A TeX source gives `lines`: there are no pages, so
+  reviewers cite sections, labels, and line numbers of `paper.txt`.
+- **`companions`**, **`figures`**, **`bibliography`**: for a TeX source the script follows
+  `\externaldocument` (the online appendix, flattened to its own text file, with the label prefix the
+  paper uses for it), `\includegraphics` (figure files copied to `figures/`, each with its labels), and
+  `\bibliography` (the .bib file). Reviewers need these: a short paper keeps most of its support in
+  the appendix, and a reviewer who cannot see it will report things as missing that are there.
+- **`--also`** adds anything the script cannot detect: pass every file the user names (`also=...`),
+  and for a PDF source ask yourself whether an appendix exists as a separate file. If the user
+  mentioned one or the paper refers to an "Online Appendix" that is not in the PDF, ask for it.
+- **`missing`** and **`warnings`**: files the source points to that were not found, or a PDF that
+  looks scanned (reviewers must then read the PDF pages directly; say so in their assignments).
+- **`git_exclude`**: if the paper sits in a git repository, such as an Overleaf project shared with
+  coauthors, the script adds `grill_*/` to that repository's `.git/info/exclude`. That file exists
+  only on this machine, so the run folder cannot be committed or pushed by accident and coauthors see
+  no change. When `added` is true, tell the user in one line that this was done. If the summary says
+  the run folder is inside a repository and not excluded, warn the user.
+
+If the paper's folder is not writable from this session, or the user wants the output elsewhere, pass
+`--run-dir <folder>`.
+
+Read the defaults from `profile.md` if it exists, otherwise from `profile.default.md`. Then read the
+whole paper yourself, and the parts of the appendix that carry the evidence (the
+measurement procedure, the robustness tables). You are the handling editor: you cannot cast the right
+panel, or later rule on a dispute between two reviewers, for a paper you have only skimmed.
 
 ### Step 2. Cast the panel
 
@@ -111,7 +139,7 @@ List the available reviewer types by searching `personas/` for the frontmatter l
 (`^(id|lens|use_when|parameters|reads):`), skipping `_TEMPLATE.md`. The library changes as the user
 tunes and adds personas, so look rather than rely on the table below.
 
-**Presets** (use the user's choice, else `profile.md`'s default depth):
+**Presets** (use the user's choice, else the profile's default depth):
 
 | Depth | Roster | Rounds |
 |---|---|---|
@@ -140,7 +168,7 @@ tunes and adds personas, so look rather than rely on the table below.
 expensive (every reviewer reads the full paper, and again in Round 2), and casting is the biggest
 lever on quality. Show the roster as a table (reviewer, lens, why this paper needs them), state the
 target journal you will use, and give the scale ("6 reviewers, 2 rounds"). Offer the adjacent
-alternatives (quicker, fuller, custom). If the target journal is unknown and `profile.md` lists
+alternatives (quicker, fuller, custom). If the target journal is unknown and the profile lists
 several, ask which one, since the bar and the audience differ.
 
 ### Step 3. Write each reviewer's assignment
@@ -155,9 +183,19 @@ only the assignment, to `prompts/<reviewer-id>.md` in the run folder:
 
 - **Persona:** <absolute path to personas/x.md>   (or "ad hoc, see below")
 - **Parameters:** <e.g. literature = "corporate bond liquidity and dealer intermediation">
-- **Target journal:** <journal>
-- **Paper text:** <run>/paper.txt   **PDF:** <path>   (page markers in the text match PDF pages)
+- **Target journal:** <journal, plus any format limits that are facts: word cap, exhibit cap, review process>
+- **Paper text:** <run>/paper.txt
+- **Appendix and other companions:** <each text file from the summary, with its label prefix if any>
+- **Figures:** <run>/figures/   <list the main-text figures as file (label)>
+- **Original PDF:** <path, when the source is a PDF>
+- **Bibliography:** <run>/<file>.bib, for looking up citation keys
 - **Write your report to:** <run>/round1/<reviewer-id>.md
+
+## How to cite locations
+<From the summary's `anchor`. For `pages`: "Cite page numbers; the page markers in paper.txt match
+the PDF." For `lines`: "The source is LaTeX, so there are no page numbers. Cite a section, a figure
+or table label, or a line number in paper.txt. Tables are inlined in the text; figures are separate
+files, so open the file when a point depends on what a figure shows.">
 
 ## Where to point your lens
 <3 to 6 sentences specific to this paper.>
@@ -165,6 +203,11 @@ only the assignment, to `prompts/<reviewer-id>.md` in the run folder:
 ## Persona (ad hoc reviewers only)
 <full persona text written from _TEMPLATE.md>
 ```
+
+Give each reviewer only the materials their persona may read. For `editor-desk`, state the exact
+pages or line ranges of the title, abstract, introduction, and conclusion, name the one results
+exhibit they may open, and leave the appendix out of the list; a reading restriction that is not
+spelled out in pages or lines does not hold.
 
 The tailoring paragraph is the part that needs judgment. Its job is to aim the reviewer, not to hand
 them a conclusion. A reviewer handed a hypothesis tends to return it confirmed, which destroys the
@@ -260,14 +303,12 @@ Write `PANEL_REPORT.md` in the run folder using `references/synthesis-template.m
 
 ### Step 8. Close the loop
 
-1. Append one row to `history/runs.md` (date, paper, target, depth, roster, run folder). If the file
-   does not exist, create it with the header row `| Date | Paper | Target | Depth | Roster | Run folder |`.
-2. Tell the user where the report is and give the bottom line in a few sentences: where the paper
+1. Tell the user where the report is and give the bottom line in a few sentences: where the paper
    stands, the biggest risk, the highest-leverage change. Do not paste the whole report.
-3. Ask which reviewers earned their seat. Any reaction, positive or negative, feeds
-   `references/tuning.md`; this is how the personas get better over time.
-4. If any reviewer was ad hoc, offer to save it to the library.
-5. Offer the next move: work through the revision plan together, or re-run the panel after revising.
+2. Offer the next move: work through the revision plan together, or re-run the panel after revising.
+3. If any reviewer was ad hoc, say that it can be kept for future runs with `save <name>`.
+
+Everything about the run lives in the run folder. Nothing is written to the skill folder.
 
 ## Run folder layout
 
@@ -276,7 +317,9 @@ Write `PANEL_REPORT.md` in the run folder using `references/synthesis-template.m
 ├── PANEL_REPORT.md      the deliverable
 ├── 00_panel.md          paper facts, roster, why each reviewer was cast
 ├── ledger.md            issue ledger
-├── paper.txt            extracted text with page markers
+├── paper.txt            extracted text (page markers for a PDF; cite by line for TeX)
+├── <appendix>.txt       online appendix and any other companion, when there is one
+├── figures/, *.bib      figure files and bibliography gathered from a TeX source
 ├── prompts/<id>.md      each reviewer's assignment
 ├── round1/<id>.md       independent reports
 └── round2/<id>.md       cross-examination positions (plus docket.md)

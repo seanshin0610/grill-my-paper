@@ -44,6 +44,7 @@ Open a session in the folder that holds your paper, then:
 | `/grill-my-paper <paper.pdf or .tex>` | Review at the default depth |
 | `... depth=quick` / `standard` / `full` / `desk` | Choose how many reviewers and whether they debate |
 | `... target=RFS` | Set the target journal |
+| `... also=online_appendix.pdf` | Give reviewers another file; for a TeX paper the appendix, figures, and bibliography are found automatically |
 | `... reviewers: skeptic, champion, lit: <a literature>` | Choose the reviewers yourself |
 | `... add: <describe a reviewer>` | Add any reviewer type you can describe |
 | `<revised paper> rerun` | After revising, check which earlier issues are resolved |
@@ -53,6 +54,10 @@ Open a session in the folder that holds your paper, then:
 
 Results go in a folder next to the paper, `grill_<paper-name>_<date>/`. Read `PANEL_REPORT.md` first.
 
+If the paper lives in a git repository, such as an Overleaf project shared with coauthors, the skill
+adds `grill_*/` to that repository's `.git/info/exclude`. That file is local to your machine, so the
+reviews cannot be committed or pushed by accident and your coauthors see no change.
+
 ## Cost
 
 Every reviewer reads the whole paper, and reads it again in the debate round. A `standard` run is five
@@ -60,15 +65,16 @@ reviewers over two rounds. Start with `depth=quick` (three reviewers, no debate)
 
 ## Make it yours
 
-- **Your field and journals.** The shipped defaults are for finance (JF, RFS, JFE). On first run the
-  skill copies `profile.default.md` to `profile.md`; edit that file, or just tell the skill ("default
-  to AER", "always seat the auditor").
-- **Your reviewers.** Reviewer types are plain Markdown files in `personas/`. After a run, tell the
-  skill what you liked or disliked and it edits the relevant persona. You can also describe a new
+- **Your field and journals.** The shipped defaults in `profile.default.md` are for finance (JF, RFS,
+  JFE). Tell the skill to change one ("default to AER", "always seat the auditor") and it writes
+  your own `profile.md`, which git ignores.
+- **Your reviewers.** Reviewer types are plain Markdown files in `personas/`. To change one, run
+  `/grill-my-paper tune <what you liked or disliked>` after a review. You can also describe a new
   reviewer type and save it.
 
-`profile.md` and the logs in `history/` are yours alone. Git ignores them, so your settings, paper
-paths, and feedback never leave your machine.
+The skill keeps no record of your runs or your papers, and it does not edit itself during a review.
+Everything a run produces stays in the run folder next to your paper. Skill files change only when
+you ask with `tune`, `save`, or a request to change a default.
 
 ## Updating
 
