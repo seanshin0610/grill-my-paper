@@ -85,3 +85,7 @@ otherwise a pull that touches the same persona will stop with a conflict.
   forecast what real referees will decide.
 - Reviewers tag every outside citation as verified or unverified. Check the unverified ones yourself
   before acting on them.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
