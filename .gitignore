@@ -1,0 +1,7 @@
+# Personal, per-user files. Created on first use; never shared.
+profile.md
+history/*.md
+
+# Python
+__pycache__/
+*.pyc
