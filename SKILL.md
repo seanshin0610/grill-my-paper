@@ -402,12 +402,35 @@ install command it prints and carry on; the review is complete without the PDF.
 
 ### Step 8. Close the loop
 
-1. Tell the user where the report is (the PDF, and the Markdown it was made from) and give the bottom
-   line in a few sentences: where the paper stands, the biggest risk, the highest-leverage change. Do
-   not paste the whole report.
-2. Offer the next move: work through the revision plan together, or re-run the panel after revising.
+1. Give the bottom line in a few sentences: where the paper stands, the biggest risk, the
+   highest-leverage change. Do not paste the whole report.
+2. List what the run produced, in one table, so the user can open any of it without searching the
+   folder. State the run folder's full path once, above the table, then give one row per file in this
+   order: the final report (the PDF, then the Markdown it was made from), each reviewer's Round 1
+   report, each reviewer's Round 2 response, and then the ledger, the docket, the citation checks, and
+   the panel setup. For a reviewer's file, add that reviewer's recommendation, so the user can see
+   which to open first. Where your interface turns file paths into links, write each file as a link;
+   otherwise give its path inside the run folder. Build the table from a listing of the run folder,
+   not from memory, so that it names every report that exists and none that does not. Leave out the
+   working files (extracted text, figures, assignments) unless the user asks for them.
+
+   ```
+   Run folder: <full path>
+
+   | File | What it is |
+   |---|---|
+   | PANEL_REPORT.pdf | Final report, for reading and sharing |
+   | PANEL_REPORT.md | The same report; the PDF is made from it |
+   | round1/skeptic.md | skeptic, Round 1: reject |
+   | round2/skeptic.md | skeptic, Round 2: reject, unchanged |
+   | ledger.md | Every issue, who raised it, and how the debate went |
+   | round2/docket.md | The issues put to cross-examination |
+   | citation_check.md | Verdicts on the citations that were looked up |
+   | 00_panel.md | Who sat on the panel and why |
+   ```
+3. Offer the next move: work through the revision plan together, or re-run the panel after revising.
    Then wait for the answer. Do not start editing the paper yourself.
-3. If any reviewer was ad hoc, say that it can be kept for future runs with `save <name>`.
+4. If any reviewer was ad hoc, say that it can be kept for future runs with `save <name>`.
 
 Everything about the run lives in the run folder. Nothing is written to the skill folder.
 

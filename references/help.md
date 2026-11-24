@@ -46,6 +46,9 @@ A folder next to the paper, `grill_<paper-name>_<date>/`:
 - `citation_check.md`: whether the papers reviewers cited exist and say what was claimed. Covers the
   ones cited from memory and the ones the report's rulings rely on.
 
+When a run finishes, the closing message lists every one of these files with its location and each
+reviewer's recommendation, so you do not have to look through the folder.
+
 ## Good to know
 
 - Your paper is never changed. The skill reads your files and writes only into the run folder. It
